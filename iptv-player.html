@@ -692,6 +692,13 @@ textarea.inp{height:auto;min-height:58px;padding:9px 12px;resize:vertical;font-s
       <details class="adv" id="adv">
         <summary>Advanced</summary>
         <div class="adv-body">
+          <label class="field">Play channels
+            <select id="optPlay" class="inp">
+              <option value="page">In this page</option>
+              <option value="tab">In a new tab — most reliable in Chrome</option>
+              <option value="popup">In a pop-up window</option>
+            </select>
+          </label>
           <label class="field">Live stream format
             <select id="optFormat" class="inp">
               <option value="auto">Automatic — HLS first, then MPEG-TS</option>
@@ -906,7 +913,7 @@ function hevcTip(ci) {
 /* =====================================================================
    Settings, proxy, server URL parsing
    ===================================================================== */
-const settings = Object.assign({ format: 'auto', proxy: '', proxyStreams: false, streamServer: '', epgShift: 0 }, store.get('settings', {}));
+const settings = Object.assign({ format: 'auto', proxy: '', proxyStreams: false, streamServer: '', playMode: 'page', epgShift: 0 }, store.get('settings', {}));
 const saveSettings = () => store.set('settings', settings);
 
 function withProxy(url, forStream) {
@@ -1483,13 +1490,15 @@ function showLogin(err) {
   $('#optProxy').value = settings.proxy;
   $('#optProxyStreams').checked = !!settings.proxyStreams;
   $('#optStream').value = settings.streamServer || '';
-  if (settings.proxy || settings.streamServer) $('#adv').open = true;
+  $('#optPlay').value = settings.playMode || 'page';
+  if (settings.proxy || settings.streamServer || settings.playMode !== 'page') $('#adv').open = true;
   setErr(err || '');
   setBusy(false);
 }
 
 function readAdvanced() {
   settings.format = $('#optFormat').value;
+  settings.playMode = $('#optPlay').value;
   settings.proxy = $('#optProxy').value.trim();
   settings.proxyStreams = $('#optProxyStreams').checked;
   const ss = $('#optStream').value.trim();
@@ -2368,13 +2377,14 @@ function overlay(mode, msg, opts = {}) {
   if (mode === 'buffer') { ov.className = 'ov buffer'; ov.innerHTML = `<div class="spin"></div>`; return; }
   if (mode === 'info') {
     ov.className = 'ov';
-    ov.innerHTML = `<div class="ov-ic info">${icon(opts.label ? 'diag' : 'ext')}</div><div class="msg">${esc(msg)}</div><div class="acts"><button type="button" class="btn primary" data-act="retry">${icon('play')}${esc(opts.label || 'Watch here instead')}</button></div>`;
+    ov.innerHTML = `<div class="ov-ic info">${icon(opts.label ? 'diag' : 'ext')}</div><div class="msg">${esc(msg)}</div><div class="acts"><button type="button" class="btn primary" data-act="${opts.act || 'retry'}">${icon('play')}${esc(opts.label || 'Watch here instead')}</button>${opts.windowBtns ? windowBtns() : ''}</div>`;
     video.controls = false;
     return;
   }
   ov.className = 'ov error';
   ov.innerHTML = `<div class="ov-ic">${icon('alert')}</div><div class="msg">${esc(msg)}</div>
-    <div class="acts">${opts.force ? `<button type="button" class="btn primary" data-act="ext">${icon('ext')}Open in VLC</button><button type="button" class="btn" data-act="force">${icon('play')}Try anyway</button>` : `<button type="button" class="btn primary" data-act="retry">${icon('refresh')}Try again</button>
+    <div class="acts">${opts.force ? `<button type="button" class="btn primary" data-act="ext">${icon('ext')}Open in VLC</button><button type="button" class="btn" data-act="force">${icon('play')}Try anyway</button>` : `${PREFER_NATIVE ? '' : `<button type="button" class="btn primary" data-act="tab">${icon('ext')}Open in new tab</button>`}<button type="button" class="btn${PREFER_NATIVE ? ' primary' : ''}" data-act="retry">${icon('refresh')}Try again</button>
+    ${PREFER_NATIVE ? '' : `<button type="button" class="btn" data-act="popup">${icon('pip')}Pop-up window</button>`}
     <button type="button" class="btn" data-act="ext">${icon('ext')}Open in VLC</button>`}
     <button type="button" class="btn" data-act="diag">${icon('diag')}Diagnose</button></div>`;
 }
@@ -2382,11 +2392,37 @@ $('#ov').addEventListener('click', (e) => {
   const b = e.target.closest('[data-act]'); if (!b || !P.item) return;
   const act = b.dataset.act;
   if (act === 'retry') playItem(P.item, P.ctx);
+  else if (act === 'here') playItem(P.item, P.ctx, { here: true });
+  else if (act === 'tab' || act === 'popup') openStreamWindow(P.item, act);
   else if (act === 'force') playItem(P.item, P.ctx, { force: true });
   else if (act === 'copy') copyLink(P.item);
   else if (act === 'diag') openDiagnose(P.item);
   else if (act === 'ext') openExternal(P.item);
 });
+
+/* ---------- Playing in a separate tab or pop-up window ----------
+   Chrome often plays a stream in a tab of its own when it won't inside this page (its own player there doesn't
+   need the provider's permission for web pages). The same named tab/window is reused, so switching channels
+   replaces the stream instead of opening a second connection. */
+const windowBtns = () => `<button type="button" class="btn" data-act="tab">${icon('ext')}New tab</button><button type="button" class="btn" data-act="popup">${icon('pip')}Pop-up window</button>`;
+function windowUrl(it) {
+  const list = P.item === it && P.urls.length ? P.urls : candidates(it);
+  const pick = list.find((c) => c.engine === 'hls') || list.find((c) => c.engine === 'native') || list[0];
+  return pick ? pick.url : '';
+}
+function openStreamWindow(it, mode) {
+  const url = windowUrl(it);
+  if (!url) { toast('No stream address for this item.'); return; }
+  // Stop playing here first, so a one-connection plan has its connection free for the new window.
+  if (P.started || P.engine) { P.gen++; teardown(); }
+  P.item = it; P.url = url;
+  const w = mode === 'popup'
+    ? window.open(url, 'iptvPlayerPopup', 'popup,width=1024,height=576')
+    : window.open(url, 'iptvPlayerTab');
+  if (!w) { toast('Your browser blocked the new window. Allow pop-ups for this page (icon at the right of the address bar), then try again.', 7000); return; }
+  try { w.focus(); } catch {}
+  overlay('info', `Playing in a ${mode === 'popup' ? 'pop-up window' : 'separate tab'}. Picking another channel here switches it there.`, { act: 'here', label: 'Watch here instead', windowBtns: true });
+}
 
 async function copyLink(it) { toast((await copyText(streamUrl(it))) ? 'Stream link copied' : "Couldn't copy the link"); }
 function openExternal(it) {
@@ -2427,6 +2463,7 @@ async function playItem(item, ctx = {}, opts = {}) {
   if (item.kind === 'episode') { state.lastEp[item.series.key] = item.key; store.set(skey('lastep'), state.lastEp); }
   const ch = ownerOf(item);
   if (ch && ch.kind === 'live') { epgWant(ch, !!ch.archive, true); }
+  if (settings.playMode && settings.playMode !== 'page' && !opts.here && !opts.retries) { openStreamWindow(item, settings.playMode); return; }
   overlay('loading', opts.retries ? 'Reconnecting…' : P.live ? 'Tuning in…' : 'Loading…');
   if (window.matchMedia('(max-width:860px)').matches && !opts.retries) window.scrollTo({ top: 0, behavior: 'smooth' });
   const verdict = codecVerdict(item.ci);
@@ -3326,6 +3363,8 @@ function renderNowPlaying() {
     <div class="np-actions">
       ${favTarget && favTarget.sec ? `<button type="button" class="ibtn${fav ? ' on' : ''}" data-np="fav" title="${fav ? 'Remove from favorites' : 'Add to favorites'}" aria-label="Favorite">${icon('star')}<span class="lbl">${fav ? 'Favorited' : 'Favorite'}</span></button>` : ''}
       ${canStep ? `<button type="button" class="ibtn" data-np="prev" title="Previous${P.live ? ' (↑)' : ''}" aria-label="Previous">${icon('prev')}<span class="lbl">Prev</span></button><button type="button" class="ibtn" data-np="next" title="Next${P.live ? ' (↓)' : ''}" aria-label="Next">${icon('next')}<span class="lbl">Next</span></button>` : ''}
+      <button type="button" class="ibtn" data-np="tab" title="Play in a separate browser tab — works when playing inside the page doesn't" aria-label="Open in new tab">${icon('ext')}<span class="lbl">New tab</span></button>
+      <button type="button" class="ibtn" data-np="popup" title="Play in a separate pop-up window" aria-label="Pop-up window">${icon('pip')}<span class="lbl">Pop-up</span></button>
       <button type="button" class="ibtn" data-np="ext" title="Download a small playlist file that opens in VLC or another player" aria-label="Open in VLC">${icon('ext')}<span class="lbl">Open in VLC</span></button>
       <button type="button" class="ibtn" data-np="copy" title="Copy the stream address" aria-label="Copy link">${icon('link')}<span class="lbl">Copy link</span></button>
       <span class="sp"></span>
@@ -3363,6 +3402,7 @@ $('#np').addEventListener('click', (e) => {
     case 'pip': togglePip(); break;
     case 'copy': copyLink(it); break;
     case 'ext': openExternal(it); break;
+    case 'tab': case 'popup': openStreamWindow(it, b.dataset.np); break;
     case 'stop': stopPlayback(); break;
     case 'guide': openGuide(ownerOf(it)); break;
     case 'golive': { const ch = ownerOf(it); const i = state.view.indexOf(ch); playItem(ch, i >= 0 ? { list: state.view, index: i } : {}); break; }
@@ -3709,9 +3749,16 @@ function codecsFromAttr(attr) {
   return out;
 }
 
+/** Failure record with how long each attempt took (a block is instant; a dead server takes a while). */
+async function failRec(kind, url, t0, extra) {
+  const ms = performance.now() - t0, r0 = performance.now();
+  const reach = await reachable(url);
+  return { fail: kind, reach, host: hostOf(url), ms, reachMs: performance.now() - r0, ...(extra || {}) };
+}
 async function probeHls(url) {
   let res;
-  try { res = await timedFetch(url, 15000); } catch (e) { return { fail: e.kind, reach: await reachable(url), host: hostOf(url) }; }
+  const tm = performance.now();
+  try { res = await timedFetch(url, 15000); } catch (e) { return failRec(e.kind, url, tm); }
   if (!res.ok) return { fail: 'http', status: res.status, host: hostOf(res.url || url) };
   let base = res.url || url, text = await res.text().catch(() => '');
   const host = hostOf(base);
@@ -3723,7 +3770,8 @@ async function probeHls(url) {
     const v = lines.slice(i + 1).find((l) => l.trim() && !l.startsWith('#'));
     if (!v) return { fail: 'format', host };
     const vu = new URL(v.trim(), base).href;
-    try { res = await timedFetch(vu, 15000); } catch (e) { return { fail: e.kind, reach: await reachable(vu), host: hostOf(vu) }; }
+    const t1 = performance.now();
+    try { res = await timedFetch(vu, 15000); } catch (e) { return failRec(e.kind, vu, t1); }
     if (!res.ok) return { fail: 'http', status: res.status, host: hostOf(vu) };
     base = res.url || vu; text = await res.text().catch(() => '');
   }
@@ -3740,7 +3788,8 @@ async function probeHls(url) {
   if (init) { try { const r = await timedFetch(init, 10000); if (r.ok) initBytes = new Uint8Array(await r.arrayBuffer()); } catch {} }
   const t0 = performance.now();
   let sr;
-  try { sr = await timedFetch(seg, 25000); } catch (e) { return { fail: e.kind, reach: await reachable(seg), host: hostOf(seg), where: 'segment' }; }
+  const t2 = performance.now();
+  try { sr = await timedFetch(seg, 25000); } catch (e) { return failRec(e.kind, seg, t2, { where: 'segment' }); }
   if (!sr.ok) return { fail: 'http', status: sr.status, host: hostOf(seg), where: 'segment' };
   let buf;
   try { buf = new Uint8Array(await sr.arrayBuffer()); } catch (e) { return { fail: 'timeout', host: hostOf(seg), where: 'segment' }; }
@@ -3754,8 +3803,9 @@ async function probeTs(url) {
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), 15000);
   let res;
+  const tm = performance.now();
   try { res = await fetch(url, { signal: ctrl.signal, cache: 'no-store', credentials: 'omit' }); }
-  catch (e) { clearTimeout(t); return { fail: e.name === 'AbortError' ? 'timeout' : 'network', reach: await reachable(url), host: hostOf(url) }; }
+  catch (e) { clearTimeout(t); return failRec(e.name === 'AbortError' ? 'timeout' : 'network', url, tm); }
   const host = hostOf(res.url || url);
   if (!res.ok) { clearTimeout(t); ctrl.abort(); return { fail: 'http', status: res.status, host }; }
   const reader = res.body.getReader(), parts = [];
@@ -3772,8 +3822,9 @@ async function probeTs(url) {
 async function probeFile(url, durSec) {
   const t0 = performance.now();
   let res;
+  const tf = performance.now();
   try { res = await timedFetch(url, 25000, { headers: { Range: 'bytes=0-2097151' } }); }
-  catch (e) { return { fail: e.kind, reach: await reachable(url), host: hostOf(url) }; }
+  catch (e) { return failRec(e.kind, url, tf); }
   const host = hostOf(res.url || url);
   if (!res.ok) return { fail: 'http', status: res.status, host };
   let buf;
@@ -3789,10 +3840,12 @@ function probeNative(url, ms = 15000) {
     const v = document.createElement('video');
     v.muted = true; v.playsInline = true; v.preload = 'auto';
     let done = false;
+    const t0 = performance.now();
     const t = setTimeout(() => finish({ fail: 'timeout' }), ms);
     function finish(r) {
       if (done) return;
       done = true; clearTimeout(t);
+      r.ms = performance.now() - t0;
       try { v.pause(); v.removeAttribute('src'); v.load(); } catch {}
       resolve(r);
     }
@@ -3819,20 +3872,25 @@ function streamFailText(r, nat) {
     return { level: 'bad', text: `The stream request failed (HTTP ${st}).`, fix: `Try again, or try another channel.` };
   }
   if (r.fail === 'network' && r.reach) return { level: 'bad', text: `The stream server${where} answers, but doesn't let web players read the video (a CORS restriction).`,
-    fix: nativeHls() && !PREFER_NATIVE ? `Chrome's own built-in video player couldn't play it either (it's new, and can't handle some IPTV servers). Safari on a Mac can play streams like this; otherwise use “Open in VLC”.`
+    fix: nativeHls() && !PREFER_NATIVE ? `Chrome's own built-in video player couldn't play it inside this page either. Press “Open the stream in a new tab” below — Chrome usually plays it in a tab of its own (set Play channels to “In a new tab” in the account menu to always do that). Otherwise use Safari or “Open in VLC”.`
       : nativeHls() ? (nat && /^(media|unsupported)$/.test(nat.fail) ? `This browser's built-in video player couldn't decode it either — the channel probably uses a format this browser can't play. Use “Open in VLC”.` : `This browser's built-in video player couldn't play it either. Use “Open in VLC”.`)
       : `This browser has no built-in HLS player to fall back on, so it can't play streams from this server.${IS_CHROME || /Edg\//.test(navigator.userAgent) ? ' On a Mac, Safari can play them (open the same file in Safari).' : ''} Otherwise use “Open in VLC”.` };
   if (r.fail === 'network' && PAGE_SECURE) return { level: 'bad', text: `The stream couldn't be loaded${where}.`, fix: `This page is on a secure (https) address, and browsers block video that your provider sends over plain http. If every channel fails like this, the hosted/home-screen version can't play this provider — use the file on your computer, or the provider's own app.` };
-  // Sign-in on the same provider worked, so in Chrome/Edge the usual cause is the server the provider
-  // redirects the video to: it uses outdated secure-connection (TLS) settings that Chrome refuses
-  // (net::ERR_SSL_VERSION_OR_CIPHER_MISMATCH). Safari and IPTV apps still accept them. Pages can't see that error.
-  if (r.fail === 'network' && !PREFER_NATIVE) return { level: 'bad', text: `Chrome couldn't open a secure connection to the stream server${where}.`,
-    fix: `Your provider hands the video to another server, and that server most likely uses outdated security settings that Chrome refuses — a web page can't work around that. Play it in Safari, use “Open in VLC”, or ask your provider for a different server address (tell them Chrome shows ERR_SSL_VERSION_OR_CIPHER_MISMATCH).` +
-      (singleConn() ? ` (Less likely: on a one-connection plan the server may still count an earlier attempt — wait a minute and run Diagnose again.)` : '') };
-  if (r.fail === 'network') return { level: 'bad', text: `This browser couldn't get a connection to the stream${where}${nat ? ", with either its built-in player or the in-page one" : ''}.`,
-    fix: singleConn()
-      ? `On a one-connection plan this usually means the server still counts an earlier attempt as open (it can take up to a minute to let go). Close the stream everywhere else, wait a minute, then run Diagnose again. If it still fails, the channel or its stream server may be down — try another channel.`
-      : `The stream server may be down, or this network may not allow a connection to it. If other channels work, it's just this one.` };
+  if (r.fail === 'network') {
+    const took = (ms) => ms == null ? '' : ms < 1000 ? ' at once' : ` after ${(ms / 1000).toFixed(ms < 10000 ? 1 : 0)} s`;
+    const parts = [nat && !nat.ok ? `built-in player: ${nat.fail} error${took(nat.ms)}` : '', `in-page player: refused${took(r.ms)}`, r.reachMs != null ? `plain request: refused${took(r.reachMs)}` : ''].filter(Boolean);
+    const text = `This browser couldn't get a connection to the stream${where}${nat ? ', with either its built-in player or the in-page one' : ''} (${parts.join('; ')}).`;
+    const tab = ' Press “Open the stream in a new tab” below (or set Play channels to “In a new tab” in the account menu): Chrome often plays a stream in its own tab when it won’t play it inside this page, and if not, its error page names the exact reason.';
+    const one = singleConn() ? ' (On a one-connection plan, also make sure nothing else is playing, and wait a minute.)' : '';
+    // Sign-in on the same provider worked, so in Chrome/Edge a common cause is the server the provider hands the
+    // video to: it uses outdated secure-connection (TLS) settings Chrome refuses (net::ERR_SSL_VERSION_OR_CIPHER_MISMATCH).
+    if (!PREFER_NATIVE) return { level: 'bad', text,
+      fix: `Something is stopping this browser specifically: most often the provider hands the video to a server with outdated security settings that Chrome refuses (ERR_SSL_VERSION_OR_CIPHER_MISMATCH), or an ad-blocking extension or organization policy.${tab} Otherwise play it in Safari, use “Open in VLC”, or ask your provider for a different server address — you can set one as “Stream server” in the account menu.${one}` };
+    return { level: 'bad', text,
+      fix: singleConn()
+        ? `On a one-connection plan this usually means the server still counts an earlier attempt as open (it can take up to a minute to let go). Close the stream everywhere else, wait a minute, then run Diagnose again. If it still fails, the channel or its stream server may be down — try another channel.`
+        : `The stream server may be down, or this network may not allow a connection to it. If other channels work, it's just this one.` };
+  }
   if (r.fail === 'timeout') return { level: 'bad', text: `The stream server${where} didn't respond in time.`, fix: `The channel is probably down or overloaded. Try again later or pick another channel.` };
   if (r.fail === 'empty') return { level: 'bad', text: `The stream connected but sent no video.`, fix: `The channel is probably down at the provider.` };
   return { level: 'bad', text: `The server answered, but not with a playable stream.`, fix: `The channel is probably misconfigured at the provider. Try another channel.` };
@@ -3869,10 +3927,12 @@ async function openDiagnose(target) {
     ${subjName ? `<p class="dg-sub">Testing with <b>${esc(subjName)}</b></p>` : ''}
     <div class="dg-verdict" id="dgVerdict" hidden></div>
     <ol class="dg-steps">${steps.map(([id, label]) => `<li class="dg-step wait" data-s="${id}"><span class="dg-ic"></span><div class="dg-tx"><b>${label}</b><p></p></div></li>`).join('')}</ol>
-    <div class="det-actions"><button type="button" class="btn" data-act="again">${icon('refresh')}Run again</button><button type="button" class="btn ghost" data-act="copy">${icon('link')}Copy report</button></div>
+    <div class="det-actions"><button type="button" class="btn" data-act="tab" id="dgTab" hidden>${icon('ext')}Open the stream in a new tab</button><button type="button" class="btn" data-act="again">${icon('refresh')}Run again</button><button type="button" class="btn ghost" data-act="copy">${icon('link')}Copy report</button></div>
   </div>`;
+  let tabUrl = '';
   openModal(html, {
     again: () => openDiagnose(target),
+    tab: () => { if (tabUrl) window.open(tabUrl, '_blank', 'noopener'); },
     copy: async () => {
       const lines = [`IPTV Player diagnostics — ${new Date().toLocaleString()}`, subjName ? `Tested: ${subjName}` : '', navigator.userAgent, ''];
       for (const [id, label] of steps) { const r = results[id]; if (r) lines.push(`[${r.level.toUpperCase()}] ${label}: ${r.plain || ''}`); }
@@ -4036,6 +4096,9 @@ async function openDiagnose(target) {
       else set('speed', 'skip', 'Not measured.');
     } else {
       const f = streamFailText(firstFail || nat || { fail: 'format' }, nat);
+      // Let the user see the browser's own error for this link (it names the exact reason).
+      tabUrl = hlsUrl || (cands[0] || {}).url || '';
+      if (tabUrl && !PREFER_NATIVE && alive()) { const tb = $('#dgTab'); if (tb) tb.hidden = false; }
       set('stream', f.level, f.text, f.fix);
       set('format', 'skip', 'Skipped — the stream didn\'t load.');
       set('speed', 'skip', '');
@@ -4105,6 +4168,8 @@ function openPop() {
       <span class="xml-btns"><a class="btn sm" href="${esc(a.url)}" target="_blank" rel="noopener noreferrer">${icon('link')}1. Download latest</a><label class="btn sm">${icon('file')}2. Choose the file<input type="file" id="popList" hidden accept=".m3u,.m3u8,.txt,audio/x-mpegurl,application/x-mpegurl,application/vnd.apple.mpegurl,text/plain"></label></span></div>` : ''}
     ${state.xt ? `<label class="field">Live stream format
       <select class="inp" id="popFmt"><option value="auto">Automatic</option><option value="m3u8">HLS (.m3u8)</option><option value="ts">MPEG-TS (.ts)</option></select></label>
+      <label class="field">Play channels
+      <select class="inp" id="popPlay"><option value="page">In this page</option><option value="tab">In a new tab</option><option value="popup">In a pop-up window</option></select></label>
       <label class="field"><span>Stream server <span class="opt">— optional: play video from another of your provider's addresses</span></span>
       <input class="inp" id="popStream" placeholder="${esc(state.xt.base)}" spellcheck="false" inputmode="url"></label>` : ''}
       <div class="field"><span>TV guide links (XMLTV) <span class="opt">— one per line, like the EPG link in iMPlayer</span></span>
@@ -4136,6 +4201,8 @@ function openPop() {
   if (pl) pl.addEventListener('change', () => { const f = pl.files && pl.files[0]; if (f) { closePop(); useDownloadedList(state.acct, f, !!store.get('last', null)); } });
   const sel = $('#popFmt');
   if (sel) { sel.value = settings.format; sel.addEventListener('change', () => { settings.format = sel.value; saveSettings(); toast('Applies to the next channel you open'); }); }
+  const pp = $('#popPlay');
+  if (pp) { pp.value = settings.playMode || 'page'; pp.addEventListener('change', () => { settings.playMode = pp.value; saveSettings(); toast(pp.value === 'page' ? 'Channels play in this page' : `Channels open in a ${pp.value === 'popup' ? 'pop-up window' : 'new tab'} — applies to the next channel you pick`); }); }
   const ps = $('#popStream');
   if (ps) {
     ps.value = settings.streamServer || '';
