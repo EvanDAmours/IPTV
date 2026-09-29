@@ -3815,6 +3815,12 @@ function streamFailText(r, nat) {
       : nativeHls() ? (nat && /^(media|unsupported)$/.test(nat.fail) ? `This browser's built-in video player couldn't decode it either — the channel probably uses a format this browser can't play. Use “Open in VLC”.` : `This browser's built-in video player couldn't play it either. Use “Open in VLC”.`)
       : `This browser has no built-in HLS player to fall back on, so it can't play streams from this server.${IS_CHROME || /Edg\//.test(navigator.userAgent) ? ' On a Mac, Safari can play them (open the same file in Safari).' : ''} Otherwise use “Open in VLC”.` };
   if (r.fail === 'network' && PAGE_SECURE) return { level: 'bad', text: `The stream couldn't be loaded${where}.`, fix: `This page is on a secure (https) address, and browsers block video that your provider sends over plain http. If every channel fails like this, the hosted/home-screen version can't play this provider — use the file on your computer, or the provider's own app.` };
+  // Sign-in on the same provider worked, so in Chrome/Edge the usual cause is the server the provider
+  // redirects the video to: it uses outdated secure-connection (TLS) settings that Chrome refuses
+  // (net::ERR_SSL_VERSION_OR_CIPHER_MISMATCH). Safari and IPTV apps still accept them. Pages can't see that error.
+  if (r.fail === 'network' && !PREFER_NATIVE) return { level: 'bad', text: `Chrome couldn't open a secure connection to the stream server${where}.`,
+    fix: `Your provider hands the video to another server, and that server most likely uses outdated security settings that Chrome refuses — a web page can't work around that. Play it in Safari, use “Open in VLC”, or ask your provider for a different server address (tell them Chrome shows ERR_SSL_VERSION_OR_CIPHER_MISMATCH).` +
+      (singleConn() ? ` (Less likely: on a one-connection plan the server may still count an earlier attempt — wait a minute and run Diagnose again.)` : '') };
   if (r.fail === 'network') return { level: 'bad', text: `This browser couldn't get a connection to the stream${where}${nat ? ", with either its built-in player or the in-page one" : ''}.`,
     fix: singleConn()
       ? `On a one-connection plan this usually means the server still counts an earlier attempt as open (it can take up to a minute to let go). Close the stream everywhere else, wait a minute, then run Diagnose again. If it still fails, the channel or its stream server may be down — try another channel.`
