@@ -170,6 +170,7 @@ details.adv .adv-body{display:flex;flex-direction:column;gap:16px;margin-top:16p
 #app.panel-on{grid-template-columns:240px minmax(300px,1fr) minmax(440px,46%);grid-template-areas:"top top top" "cats browse panel"}
 #app.theater{grid-template-columns:minmax(0,1fr)!important;grid-template-areas:"top" "panel"!important}
 #app.theater .cats,#app.theater .browse{display:none}
+#app:not(.panel-on) .panel{display:none}
 .top{grid-area:top;position:relative;z-index:20;display:flex;align-items:center;gap:22px;padding:0 18px 0 20px;background:var(--bg);box-shadow:0 .5px 0 var(--line);min-width:0}
 .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:15px;letter-spacing:-.015em;flex:none}
 .brand .logo-mark{width:28px;height:28px;border-radius:8px;box-shadow:none}
@@ -192,6 +193,18 @@ details.adv .adv-body{display:flex;flex-direction:column;gap:16px;margin-top:16p
 .acct-btn .av{width:28px;height:28px;border-radius:50%;background:linear-gradient(160deg,#6e6e73,#48484a);display:grid;place-items:center;font-weight:600;font-size:11.5px;color:#fff}
 .acct-btn .nm{max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;font-size:13px}
 
+/* sidebar sections (Browse / Categories) */
+.side-nav{padding:14px 10px 4px}
+.side-h{padding:0 10px 6px;font-size:11.5px;font-weight:600;color:var(--dim);letter-spacing:.01em}
+.cats-h{padding:14px 20px 0}
+.side-nav .tabs{display:flex;flex-direction:column;gap:1px}
+.side-nav .tabs button{justify-content:flex-start;gap:11px;width:100%;height:36px;padding:0 10px;border-radius:8px;font-size:14px;font-weight:500;color:var(--text);opacity:.86;background:transparent}
+.side-nav .tabs button svg{display:block;width:18px;height:18px;color:var(--muted)}
+.side-nav .tabs button:hover{background:var(--fill);opacity:1}
+.side-nav .tabs button.on{background:rgba(255,255,255,.1);opacity:1;font-weight:600}
+.side-nav .tabs button.on svg{color:var(--text)}
+.side-nav .tabs button span.lbl{display:inline!important}
+.cats .cats-filter{padding-top:8px}
 /* categories */
 .cats{grid-area:cats;display:flex;flex-direction:column;min-height:0;background:var(--side);box-shadow:.5px 0 0 var(--line)}
 .cats-filter{padding:14px 12px 8px}
@@ -608,8 +621,7 @@ textarea.inp{height:auto;min-height:62px;padding:10px 14px;resize:vertical;font-
   #app.panel-on .cats{display:none}
   #app.panel-on .catselect{display:block}
   #app.panel-on .browse-h .bh-t{display:none}
-  .tabs button span.lbl{display:none}
-  .tabs button{padding:0 12px}
+  .tabs button{padding:0 13px}
 }
 @media (max-width:860px){
   :root{--top:auto}
@@ -833,6 +845,8 @@ textarea.inp{height:auto;min-height:62px;padding:10px 14px;resize:vertical;font-
   </header>
 
   <aside class="cats">
+    <div class="side-nav" id="sideNav"><div class="side-h">Browse</div></div>
+    <div class="side-h cats-h">Categories</div>
     <div class="cats-filter"><input id="catFilter" class="inp" placeholder="Filter categories" autocomplete="off" spellcheck="false"></div>
     <div id="catList" class="cat-list"></div>
   </aside>
@@ -2060,6 +2074,17 @@ function markActive() {
   listEl.querySelectorAll(`[data-k="${CSS.escape(key)}"]`).forEach((el) => el.classList.add('on'));
 }
 
+/* Live TV / Movies / Series sit in the sidebar (like the Mac TV app); when the sidebar is hidden
+   (phones, mid-size screens while playing, theater mode) they move back to the top bar. */
+function placeTabs() {
+  const tabs = $('#tabs'), side = $('#sideNav'), brand = $('#app .brand');
+  if (!tabs || !side || !brand) return;
+  const inSide = getComputedStyle($('#app .cats')).display !== 'none';
+  if (inSide && tabs.parentElement !== side) side.appendChild(tabs);
+  else if (!inSide && tabs.previousElementSibling !== brand) brand.after(tabs);
+  $('#app').classList.toggle('tabs-side', inSide);
+}
+window.addEventListener('resize', () => placeTabs());
 function updateLayout() {
   const app = $('#app');
   app.classList.toggle('panel-on', state.section === 'live' || !!P.item);
@@ -2068,6 +2093,7 @@ function updateLayout() {
   const seg = $('#viewSeg');
   if (seg) { seg.hidden = !guideAvailable(); seg.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b.dataset.view === (guideOn() ? 'guide' : 'list'))); }
   if (!P.item) app.classList.remove('theater');
+  placeTabs();
 }
 
 function activate(it, index) {
@@ -2721,6 +2747,7 @@ function toggleTheater(force) {
   const on = typeof force === 'boolean' ? force : !app.classList.contains('theater');
   if (on && !P.item) return;
   app.classList.toggle('theater', on);
+  placeTabs();
   renderNowPlaying();
 }
 
