@@ -1782,13 +1782,14 @@ async function connect(acct, remember, opts = {}) {
         // The main address didn't answer: try the account's backup addresses before giving up.
         const down = e instanceof ApiError && (e.kind === 'network' || e.kind === 'timeout' || (e.kind === 'http' && e.status >= 500));
         const main = normalizeServer(acct.server);
+        let alt = 0;
         for (const b of down ? backupList(acct).filter((x) => x !== main) : []) {
           if (gen !== connectGen) return;
-          setBusy(true, `Trying ${hostOf(b)}…`);
+          setBusy(true, `Trying alternative source ${++alt}…`);
           const x = makeXtream(secureUrl(b), acct.username, acct.password);
           try {
             const rr = await x.call({}, 20000);
-            if (rr && rr.user_info) { xt = x; r = rr; setTimeout(() => toast(`${hostOf(main)} didn't answer — signed in through ${hostOf(b)}`, 5000), 900); break; }
+            if (rr && rr.user_info) { xt = x; r = rr; const n = alt; setTimeout(() => toast(`Signed in through alternative source ${n}`, 4000), 900); break; }
           } catch {}
         }
         if (!r) throw httpsHelp(e);
@@ -2784,8 +2785,9 @@ function openStreamWindow(it, mode) {
 /** Switch video to the provider's next address and reopen the tab / pop-up there. */
 function nextServer(it) {
   const xt = state.xt, list = streamServers(); if (!xt || list.length < 2) return;
-  xt.streamAlt = list[(list.indexOf(xt.streamBase) + 1) % list.length];
-  toast(`Now using ${hostOf(xt.streamBase)}`);
+  const i = (list.indexOf(xt.streamBase) + 1) % list.length;
+  xt.streamAlt = list[i];
+  toast(i ? `Switched to alternative source ${i}` : 'Switched back to the main source');
   openStreamWindow(it, P.windowMode || 'tab');
 }
 
@@ -2853,7 +2855,7 @@ async function playItem(item, ctx = {}, opts = {}) {
       if (c.engine === 'hls' && lastErr && P.urls.some((x) => x.engine === 'native')) P.hlsFirst = true;
       if (c.engine === 'native' && lastErr && P.urls.some((x) => x.engine === 'hls' && x.url === c.url)) P.hlsFirst = false;
       if (!video.paused || video.readyState >= 2) overlay(null);
-      if (tried.size) toast(`Playing from ${hostOf(state.xt.streamBase)} — the other address didn't work`, 4500);
+      if (tried.size) toast(`Playing from alternative source ${tried.size}`, 3500);
       afterStart(item, opts);
       return;
     } catch (e) {
@@ -2883,7 +2885,7 @@ async function playItem(item, ctx = {}, opts = {}) {
   const next = streamServers().find((x) => !tried.has(x));
   if (!next) { xt.streamAlt = altBefore; break; }
   xt.streamAlt = next;
-  overlay('loading', `Trying ${hostOf(next)}…`);
+  overlay('loading', `Trying alternative source ${tried.size}…`);
   P.urls = candidates(item);
   if (singleConn()) { await sleep(1200); if (gen !== P.gen) return; }
   }
