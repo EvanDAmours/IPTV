@@ -647,6 +647,13 @@ textarea.inp{height:auto;min-height:62px;padding:10px 14px;resize:vertical;font-
 .bk-confirm{display:flex;align-items:center;gap:12px;justify-content:space-between;padding:10px 12px;border-radius:12px;background:rgba(48,209,88,.1);font-size:13px}
 .bk .err:empty{display:none}
 
+/* sign in with a backup file */
+.btn.bkbtn{background:transparent;box-shadow:inset 0 0 0 1px var(--line2);font-weight:500;color:var(--text);cursor:pointer}
+.btn.bkbtn:hover{background:var(--fill)}
+.bk-inline{display:flex;flex-direction:column;gap:10px;padding:12px 14px;border-radius:12px;background:var(--fill);font-size:13px;color:var(--muted);line-height:1.45}
+.bk-inline-acts{display:flex;gap:8px;justify-content:flex-end}
+.login.drop .panel-card{box-shadow:var(--shadow),0 0 0 2px rgba(255,255,255,.5)}
+
 /* copy from another account */
 .cp-row .ce-n{display:flex;flex-direction:column;gap:2px;white-space:normal}
 .cp-row .ce-n b{font-weight:600;font-size:14px}
@@ -866,6 +873,9 @@ textarea.inp{height:auto;min-height:62px;padding:10px 14px;resize:vertical;font-
       <label class="check"><input type="checkbox" id="remember" checked> Remember on this device</label>
 
       <button type="button" id="connect" class="btn primary block">Connect</button>
+      <div class="or">or</div>
+      <label class="btn block bkbtn" id="bkSignIn"><svg class="i"><use href="#i-download"/></svg><span>Sign in with a backup file</span><input type="file" id="bkSignFile" accept=".json,application/json,text/plain" hidden></label>
+      <div class="bk-inline" id="bkInline" hidden><span id="bkInlineWhat"></span><span class="bk-inline-acts"><button type="button" class="btn sm" id="bkInlineNo">Cancel</button><button type="button" class="btn sm primary" id="bkInlineYes">Replace &amp; sign in</button></span></div>
       <div id="loginErr" class="err" role="alert"></div>
 
       <details class="adv" id="adv">
@@ -899,7 +909,7 @@ textarea.inp{height:auto;min-height:62px;padding:10px 14px;resize:vertical;font-
         </div>
       </details>
     </div>
-    <p class="foot">Your login stays in this browser and is only sent to your provider.<br><button type="button" class="linkbtn" id="restoreLink">Restore from a backup</button></p>
+    <p class="foot">Your login stays in this browser and is only sent to your provider.<br><button type="button" class="linkbtn" id="restoreLink">Paste backup text instead</button></p>
     <p class="a2hs" id="a2hs" hidden>On iPhone: tap <b>Share</b> <svg class="i" viewBox="0 0 24 24"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg> then <b>Add to Home Screen</b> to keep this as an app.</p>
     <noscript><p class="err">This player needs JavaScript. On iPhone, open it from its web address in Safari — the Files app only shows a preview.</p></noscript>
   </div>
@@ -4950,9 +4960,39 @@ function applyBackup(b) {
     old.forEach((k) => localStorage.removeItem(k));
     for (const [k, v] of Object.entries(b.data)) if (k.startsWith('iptvp.') && typeof v === 'string') localStorage.setItem(k, v);
   } catch (e) { toast("Couldn't restore — this browser didn't allow saving the data.", 6000); return; }
-  toast('Restored — reloading…');
-  setTimeout(() => location.reload(), 700);
+  // Make sure the page signs straight in after reloading.
+  try {
+    const list = JSON.parse(localStorage.getItem('iptvp.accounts') || '[]');
+    const last = JSON.parse(localStorage.getItem('iptvp.last') || 'null');
+    if (list.length && !list.some((a) => a.id === last)) localStorage.setItem('iptvp.last', JSON.stringify(list[0].id));
+  } catch {}
+  toast('Restored — signing in…');
+  setTimeout(() => location.reload(), 600);
 }
+/* Sign-in screen: "Sign in with a backup file" (or drop the file on the page) restores and signs in in one step.
+   It only asks first when this browser already has saved logins that the backup would replace. */
+let bkPending = null;
+async function signInWithBackup(file) {
+  setErr(''); $('#bkInline').hidden = true; bkPending = null;
+  let b;
+  try { b = parseBackup(await readFileText(file)); } catch (e) { setErr(e.message); return; }
+  if (!arr(JSON.parse(b.data['iptvp.accounts'] || '[]')).length) { setErr("That backup doesn't contain a saved login."); return; }
+  const here = accounts().length;
+  if (!here) { applyBackup(b); return; }
+  bkPending = b;
+  $('#bkInlineWhat').textContent = `This backup has ${backupSummary(b).split(' · ')[0].replace(', ', ' and ')}. It replaces the ${here} login${here === 1 ? '' : 's'} saved in this browser.`;
+  $('#bkInline').hidden = false;
+}
+$('#bkSignFile').addEventListener('change', (e) => { const f = e.target.files && e.target.files[0]; e.target.value = ''; if (f) signInWithBackup(f); });
+$('#bkInlineYes').addEventListener('click', () => { if (bkPending) applyBackup(bkPending); });
+$('#bkInlineNo').addEventListener('click', () => { bkPending = null; $('#bkInline').hidden = true; });
+$('#login').addEventListener('dragover', (e) => { if ([...(e.dataTransfer.types || [])].includes('Files')) { e.preventDefault(); $('#login').classList.add('drop'); } });
+$('#login').addEventListener('dragleave', (e) => { if (e.target === $('#login')) $('#login').classList.remove('drop'); });
+$('#login').addEventListener('drop', (e) => {
+  const f = e.dataTransfer.files && e.dataTransfer.files[0]; $('#login').classList.remove('drop');
+  if (!f) return; e.preventDefault();
+  if (/\.json$/i.test(f.name) || f.type === 'application/json') signInWithBackup(f);
+});
 function openBackup() {
   let pending = null;
   const html = `<div class="dg bk">
