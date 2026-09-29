@@ -699,6 +699,9 @@ textarea.inp{height:auto;min-height:58px;padding:9px 12px;resize:vertical;font-s
               <option value="ts">MPEG-TS (.ts)</option>
             </select>
           </label>
+          <label class="field"><span>Stream server <span class="opt">— optional: sign in with your usual server, play video from this one</span></span>
+            <input id="optStream" class="inp" placeholder="http://another-server.example" spellcheck="false" inputmode="url">
+          </label>
           <label class="field"><span>CORS proxy <span class="opt">— only if your provider blocks browser apps</span></span>
             <input id="optProxy" class="inp" placeholder="https://proxy.example/  or  https://proxy.example/?url={url}" spellcheck="false">
           </label>
@@ -903,7 +906,7 @@ function hevcTip(ci) {
 /* =====================================================================
    Settings, proxy, server URL parsing
    ===================================================================== */
-const settings = Object.assign({ format: 'auto', proxy: '', proxyStreams: false, epgShift: 0 }, store.get('settings', {}));
+const settings = Object.assign({ format: 'auto', proxy: '', proxyStreams: false, streamServer: '', epgShift: 0 }, store.get('settings', {}));
 const saveSettings = () => store.set('settings', settings);
 
 function withProxy(url, forStream) {
@@ -999,8 +1002,10 @@ function makeXtream(server, username, password) {
       if (!text) return null;
       try { return JSON.parse(text); } catch { throw new ApiError('format'); }
     },
+    /** Where video is played from: the optional stream server (Advanced), otherwise the sign-in server. */
+    get streamBase() { return (settings.streamServer && secureUrl(settings.streamServer)) || base; },
     url(kind, id, ext) {
-      return `${base}/${kind}/${pathSafe(username)}/${pathSafe(password)}/${id}${ext ? '.' + ext : ''}`;
+      return `${this.streamBase}/${kind}/${pathSafe(username)}/${pathSafe(password)}/${id}${ext ? '.' + ext : ''}`;
     },
   };
 }
@@ -1477,7 +1482,8 @@ function showLogin(err) {
   $('#optFormat').value = settings.format;
   $('#optProxy').value = settings.proxy;
   $('#optProxyStreams').checked = !!settings.proxyStreams;
-  if (settings.proxy) $('#adv').open = true;
+  $('#optStream').value = settings.streamServer || '';
+  if (settings.proxy || settings.streamServer) $('#adv').open = true;
   setErr(err || '');
   setBusy(false);
 }
@@ -1486,6 +1492,8 @@ function readAdvanced() {
   settings.format = $('#optFormat').value;
   settings.proxy = $('#optProxy').value.trim();
   settings.proxyStreams = $('#optProxyStreams').checked;
+  const ss = $('#optStream').value.trim();
+  settings.streamServer = ss ? (normalizeServer(ss) || settings.streamServer || '') : '';
   saveSettings();
 }
 
@@ -2143,9 +2151,9 @@ function candidates(it) {
     const xt = state.xt, ch = it.channel, pr = it.prog;
     const mins = Math.max(1, Math.round((pr.end - pr.start) / 60000)), st = serverStamp(pr.start);
     const u = pathSafe(xt.username), pw = pathSafe(xt.password);
-    add(`${xt.base}/timeshift/${u}/${pw}/${mins}/${st}/${ch.id}.m3u8`, 'hls');
-    add(`${xt.base}/timeshift/${u}/${pw}/${mins}/${st}/${ch.id}.ts`, 'ts');
-    add(`${xt.base}/streaming/timeshift.php?${new URLSearchParams({ username: xt.username, password: xt.password, stream: ch.id, start: st, duration: mins })}`, 'ts');
+    add(`${xt.streamBase}/timeshift/${u}/${pw}/${mins}/${st}/${ch.id}.m3u8`, 'hls');
+    add(`${xt.streamBase}/timeshift/${u}/${pw}/${mins}/${st}/${ch.id}.ts`, 'ts');
+    add(`${xt.streamBase}/streaming/timeshift.php?${new URLSearchParams({ username: xt.username, password: xt.password, stream: ch.id, start: st, duration: mins })}`, 'ts');
     return finish();
   }
   if (it.url) {
@@ -4096,7 +4104,9 @@ function openPop() {
     ${drive && a.direct === false ? `<div class="field"><span>Update your channel list <span class="opt">— Google Drive doesn't let web pages read it directly</span></span>
       <span class="xml-btns"><a class="btn sm" href="${esc(a.url)}" target="_blank" rel="noopener noreferrer">${icon('link')}1. Download latest</a><label class="btn sm">${icon('file')}2. Choose the file<input type="file" id="popList" hidden accept=".m3u,.m3u8,.txt,audio/x-mpegurl,application/x-mpegurl,application/vnd.apple.mpegurl,text/plain"></label></span></div>` : ''}
     ${state.xt ? `<label class="field">Live stream format
-      <select class="inp" id="popFmt"><option value="auto">Automatic</option><option value="m3u8">HLS (.m3u8)</option><option value="ts">MPEG-TS (.ts)</option></select></label>` : ''}
+      <select class="inp" id="popFmt"><option value="auto">Automatic</option><option value="m3u8">HLS (.m3u8)</option><option value="ts">MPEG-TS (.ts)</option></select></label>
+      <label class="field"><span>Stream server <span class="opt">— optional: play video from another of your provider's addresses</span></span>
+      <input class="inp" id="popStream" placeholder="${esc(state.xt.base)}" spellcheck="false" inputmode="url"></label>` : ''}
       <div class="field"><span>TV guide links (XMLTV) <span class="opt">— one per line, like the EPG link in iMPlayer</span></span>
         <textarea class="inp" id="popXml" rows="2" spellcheck="false" placeholder="https://…/guide.xml.gz"></textarea>
         <span class="xml-status" id="xmlStatus"></span>
@@ -4126,6 +4136,16 @@ function openPop() {
   if (pl) pl.addEventListener('change', () => { const f = pl.files && pl.files[0]; if (f) { closePop(); useDownloadedList(state.acct, f, !!store.get('last', null)); } });
   const sel = $('#popFmt');
   if (sel) { sel.value = settings.format; sel.addEventListener('change', () => { settings.format = sel.value; saveSettings(); toast('Applies to the next channel you open'); }); }
+  const ps = $('#popStream');
+  if (ps) {
+    ps.value = settings.streamServer || '';
+    ps.addEventListener('change', () => {
+      const v = ps.value.trim(), n = v ? normalizeServer(v) : '';
+      if (v && !n) { toast("That doesn't look like a server address, e.g. http://example.com:8080"); return; }
+      settings.streamServer = n; ps.value = n; saveSettings();
+      toast(n ? `Video now plays from ${hostOf(n)} — applies to the next channel you open` : 'Video plays from the sign-in server again');
+    });
+  }
   const r = $('#acctBtn').getBoundingClientRect();
   pop.style.top = `${Math.round(r.bottom + 8)}px`;
   pop.style.right = `${Math.max(12, Math.round(window.innerWidth - r.right))}px`;
