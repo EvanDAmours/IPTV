@@ -609,6 +609,70 @@ textarea.inp{height:auto;min-height:62px;padding:10px 14px;resize:vertical;font-
 .status-ok{color:var(--ok)}
 .status-warn{color:var(--gold)}
 
+/* sidebar: edit categories */
+.cats-h{display:flex;align-items:center}
+.side-edit{margin-left:auto;border:0;background:transparent;color:var(--muted);font-size:12px;font-weight:500;padding:2px 6px;border-radius:6px}
+.side-edit:hover{color:var(--text);background:var(--fill)}
+.cat .pinmark{display:grid;place-items:center;color:var(--dim)}
+.cat .pinmark svg{width:12px;height:12px}
+.cat-more{display:block;width:100%;margin-top:10px;padding:8px 10px;border:0;border-radius:8px;background:transparent;color:var(--dim);font-size:12.5px;text-align:left}
+.cat-more:hover{color:var(--text);background:var(--fill)}
+.ce-bar{display:flex;gap:8px;align-items:center}
+.ce-bar .inp{height:36px;font-size:13.5px;border-radius:999px;background:rgba(255,255,255,.07)}
+.ce-sum{font-size:12.5px;color:var(--dim)}
+.ce-list{display:flex;flex-direction:column;border-radius:14px;background:var(--surface2);max-height:min(52vh,520px);overflow:auto}
+.ce-row{display:flex;align-items:center;gap:10px;padding:6px 10px 6px 16px;min-height:46px;position:relative}
+.ce-row+.ce-row::before{content:"";position:absolute;top:0;left:16px;right:0;border-top:1px solid var(--line)}
+.ce-row .ce-n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
+.ce-row.off .ce-n,.ce-row.off .cc{color:var(--dim)}
+.ce-row .cc{font-size:12px;color:var(--dim);font-variant-numeric:tabular-nums}
+.ce-pin{width:32px;height:32px;color:var(--dim)}
+.ce-pin svg{width:16px;height:16px}
+.ce-pin.on{color:var(--text)}
+.ce-pin.on svg{fill:currentColor}
+.sw{position:relative;display:inline-block;width:42px;height:26px;flex:none;cursor:pointer}
+.sw input{position:absolute;opacity:0;width:0;height:0}
+.sw span{position:absolute;inset:0;border-radius:999px;background:rgba(120,120,128,.36);transition:background .2s var(--ease)}
+.sw span::after{content:"";position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,.3);transition:transform .2s var(--ease)}
+.sw input:checked+span{background:var(--ok)}
+.sw input:checked+span::after{transform:translateX(16px)}
+.sw input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px}
+
+/* backup & restore */
+.linkbtn{border:0;background:transparent;color:var(--muted);font-size:12.5px;font-weight:500;margin-top:8px;padding:4px 8px;border-radius:8px}
+.linkbtn:hover{color:var(--text);background:var(--fill)}
+.bk-sec{display:flex;flex-direction:column;gap:10px;padding:16px;border-radius:14px;background:var(--surface2)}
+.bk-sec>b{font-size:14.5px;font-weight:600}
+.bk-sec .det-actions{margin-top:0}
+.bk-confirm{display:flex;align-items:center;gap:12px;justify-content:space-between;padding:10px 12px;border-radius:12px;background:rgba(48,209,88,.1);font-size:13px}
+.bk .err:empty{display:none}
+
+/* quality menu */
+.np-actions .btn.open.q{padding:0 12px}
+.menu .ck{margin-left:auto;color:var(--text);font-weight:600}
+.menu .sub{color:var(--dim);font-size:11.5px;font-weight:600;margin-left:2px}
+
+/* episode download */
+.ep-dl{align-self:center;color:var(--dim);opacity:0;transition:opacity .15s}
+.ep:hover .ep-dl,.ep-dl:focus-visible{opacity:1}
+
+/* download progress card */
+.dl{position:fixed;right:20px;bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:55;width:360px;max-width:calc(100vw - 32px);display:flex;gap:12px;align-items:flex-start;padding:14px 10px 14px 14px;border-radius:16px;background:var(--glass-strong);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);box-shadow:var(--shadow);animation:pop .2s var(--ease)}
+.dl-ic{width:34px;height:34px;flex:none;border-radius:50%;display:grid;place-items:center;background:var(--fill2);color:var(--text);font-weight:700}
+.dl-ic svg{width:17px;height:17px}
+.dl-ic.ok{background:var(--ok);color:#00200a}
+.dl-ic.warn{background:var(--gold);color:#2a2000}
+.dl-b{flex:1;min-width:0;display:flex;flex-direction:column;gap:7px}
+.dl-n{font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dl-s{font-size:12px;color:var(--muted);line-height:1.45;font-variant-numeric:tabular-nums}
+.dl .bar{height:4px}
+.dl .bar.ind i{animation:ind 1.3s ease-in-out infinite}
+@keyframes ind{0%{transform:translateX(-100%)}100%{transform:translateX(340%)}}
+.dl-acts{display:flex;gap:8px}
+.dl-acts .btn{text-decoration:none}
+.dl .ibtn{width:30px;height:30px;flex:none}
+.dl .ibtn svg{width:15px;height:15px}
+
 /* toast */
 .toast{position:fixed;left:50%;bottom:calc(28px + env(safe-area-inset-bottom,0px));transform:translate(-50%,16px) scale(.98);opacity:0;pointer-events:none;background:var(--glass-strong);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);color:var(--text);font-weight:500;font-size:13.5px;padding:11px 18px;border-radius:999px;box-shadow:var(--shadow);transition:opacity .25s var(--ease),transform .25s var(--ease);z-index:60;max-width:calc(100vw - 32px);text-align:center}
 .toast.show{opacity:1;transform:translate(-50%,0) scale(1)}
@@ -688,6 +752,8 @@ textarea.inp{height:auto;min-height:62px;padding:10px 14px;resize:vertical;font-
   .seg.sm span{display:none}
   .pd,.dg{padding:24px 18px}
   .menu{left:auto;right:0;transform-origin:top right}
+  .ep-dl{opacity:1}
+  .dl{left:16px;right:16px;width:auto;bottom:calc(16px + env(safe-area-inset-bottom,0px))}
   .login{align-items:flex-start}
 }
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
@@ -722,6 +788,9 @@ textarea.inp{height:auto;min-height:62px;padding:10px 14px;resize:vertical;font-
   <symbol id="i-guide" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8.5 9.5V20M14 9.5v5.2M14 14.7h7M3 14.7h5.5"/></symbol>
   <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1.2" fill="currentColor" stroke="none"/><circle cx="4.5" cy="12" r="1.2" fill="currentColor" stroke="none"/><circle cx="4.5" cy="18" r="1.2" fill="currentColor" stroke="none"/></symbol>
   <symbol id="i-diag" viewBox="0 0 24 24"><path d="M3 12h4l2.5-6 4 12 2.5-6h5"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 17v5"/><path d="M9 10.8a2 2 0 0 1-1.1 1.8l-1.8.9A2 2 0 0 0 5 15.2V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.8a2 2 0 0 0-1.1-1.8l-1.8-.9A2 2 0 0 1 15 10.8V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></symbol>
+  <symbol id="i-server" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="7" rx="2"/><rect x="3" y="14" width="18" height="7" rx="2"/><path d="M7 6.5h.01M7 17.5h.01"/></symbol>
   <symbol id="i-inbox" viewBox="0 0 24 24"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5.1 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.5-6.9A2 2 0 0 0 16.7 4H7.3a2 2 0 0 0-1.8 1.1z"/></symbol>
 </svg>
 
@@ -813,6 +882,9 @@ textarea.inp{height:auto;min-height:62px;padding:10px 14px;resize:vertical;font-
           <label class="field"><span>Stream server <span class="opt">— optional: sign in with your usual server, play video from this one</span></span>
             <input id="optStream" class="inp" placeholder="http://another-server.example" spellcheck="false" inputmode="url">
           </label>
+          <label class="field"><span>Backup servers <span class="opt">— optional, one per line: other addresses your provider gave you. Used automatically when the main one doesn't work.</span></span>
+            <textarea id="optBackups" class="inp" rows="2" placeholder="http://backup1.example&#10;http://backup2.example" spellcheck="false"></textarea>
+          </label>
           <label class="field"><span>CORS proxy <span class="opt">— only if your provider blocks browser apps</span></span>
             <input id="optProxy" class="inp" placeholder="https://proxy.example/  or  https://proxy.example/?url={url}" spellcheck="false">
           </label>
@@ -821,7 +893,7 @@ textarea.inp{height:auto;min-height:62px;padding:10px 14px;resize:vertical;font-
         </div>
       </details>
     </div>
-    <p class="foot">Your login stays in this browser and is only sent to your provider.</p>
+    <p class="foot">Your login stays in this browser and is only sent to your provider.<br><button type="button" class="linkbtn" id="restoreLink">Restore from a backup</button></p>
     <p class="a2hs" id="a2hs" hidden>On iPhone: tap <b>Share</b> <svg class="i" viewBox="0 0 24 24"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg> then <b>Add to Home Screen</b> to keep this as an app.</p>
     <noscript><p class="err">This player needs JavaScript. On iPhone, open it from its web address in Safari — the Files app only shows a preview.</p></noscript>
   </div>
@@ -846,7 +918,7 @@ textarea.inp{height:auto;min-height:62px;padding:10px 14px;resize:vertical;font-
 
   <aside class="cats">
     <div class="side-nav" id="sideNav"><div class="side-h">Browse</div></div>
-    <div class="side-h cats-h">Categories</div>
+    <div class="side-h cats-h">Categories<button type="button" class="side-edit" id="catEdit">Edit</button></div>
     <div class="cats-filter"><input id="catFilter" class="inp" placeholder="Filter categories" autocomplete="off" spellcheck="false"></div>
     <div id="catList" class="cat-list"></div>
   </aside>
@@ -884,6 +956,7 @@ textarea.inp{height:auto;min-height:62px;padding:10px 14px;resize:vertical;font-
 
 <div id="acctPop" class="pop" hidden></div>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
+<div id="dl" class="dl" hidden aria-live="polite"></div>
 
 <script>
 /*! hls.js v1.6.19 | Apache-2.0 License | https://github.com/video-dev/hls.js */
@@ -1021,7 +1094,7 @@ function hevcTip(ci) {
 /* =====================================================================
    Settings, proxy, server URL parsing
    ===================================================================== */
-const settings = Object.assign({ format: 'auto', proxy: '', proxyStreams: false, streamServer: '', playMode: 'page', epgShift: 0 }, store.get('settings', {}));
+const settings = Object.assign({ format: 'auto', proxy: '', proxyStreams: false, streamServer: '', playMode: 'page', quality: 'auto', epgShift: 0 }, store.get('settings', {}));
 const saveSettings = () => store.set('settings', settings);
 
 function withProxy(url, forStream) {
@@ -1118,11 +1191,27 @@ function makeXtream(server, username, password) {
       try { return JSON.parse(text); } catch { throw new ApiError('format'); }
     },
     /** Where video is played from: the optional stream server (Advanced), otherwise the sign-in server. */
-    get streamBase() { return (settings.streamServer && secureUrl(settings.streamServer)) || base; },
+    get streamBase() { return this.streamAlt || (settings.streamServer && secureUrl(settings.streamServer)) || base; },
     url(kind, id, ext) {
       return `${this.streamBase}/${kind}/${pathSafe(username)}/${pathSafe(password)}/${id}${ext ? '.' + ext : ''}`;
     },
   };
+}
+
+/* ---------- Backup servers ----------
+   Providers usually give several addresses for the same account. Sign-in and playback move on to the
+   next one when the current address doesn't answer. */
+const parseServerList = (text) => [...new Set(String(text || '').split(/[\s,]+/).map((x) => normalizeServer(x)).filter(Boolean))];
+const backupList = (acct) => arr(acct && acct.backups).map((x) => normalizeServer(x)).filter(Boolean);
+/** Every address video can come from, the one in use first. */
+function streamServers() {
+  const xt = state.xt; if (!xt) return [];
+  const list = [xt.streamBase, settings.streamServer, xt.base, xt.keyBase, ...backupList(state.acct)].filter(Boolean).map((x) => secureUrl(normalizeServer(x)));
+  return [...new Set(list)];
+}
+function updateSavedAccount(acct) {
+  const list = accounts(), id = acctId(acct), i = list.findIndex((x) => x.id === id);
+  if (i >= 0) { list[i] = { ...list[i], backups: acct.backups || [] }; store.set('accounts', list); }
 }
 
 function explain(err) {
@@ -1257,7 +1346,7 @@ const state = {
 
 const acctKey = () => {
   const a = state.acct; if (!a) return '';
-  return a.type === 'xtream' ? `x|${state.xt.base}|${a.username}` : `m|${a.url || a.label}`;
+  return a.type === 'xtream' ? `x|${state.xt.keyBase || state.xt.base}|${a.username}` : `m|${a.url || a.label}`;
 };
 const skey = (k) => `${k}|${acctKey()}`;
 const singleConn = () => state.xt && +(((state.info || {}).user_info || {}).max_connections) === 1;
@@ -1282,7 +1371,8 @@ function loadUserData() {
   }
   state.pos = store.get(skey('pos'), {});
   state.lastEp = store.get(skey('lastep'), {});
-  state.prefs = Object.assign({ cat: {}, sort: {}, section: '' }, store.get(skey('prefs'), {}));
+  state.prefs = Object.assign({ cat: {}, sort: {}, section: '', hide: {}, pin: {} }, store.get(skey('prefs'), {}));
+  state.prefs.hide = state.prefs.hide || {}; state.prefs.pin = state.prefs.pin || {};
 }
 const savePrefs = () => store.set(skey('prefs'), state.prefs);
 
@@ -1625,7 +1715,9 @@ function acctFromForm() {
     if (!server) throw new Error('Enter your server URL, for example http://example.com:8080');
     if (!normalizeServer(server)) throw new Error("That server URL doesn't look right. It should look like http://example.com:8080");
     if (!username || !password) throw new Error('Enter your username and password.');
-    return { type: 'xtream', server: normalizeServer(server), username, password };
+    const typed = parseServerList($('#optBackups').value);
+    const prev = accounts().find((x) => x.id === acctId({ type: 'xtream', server, username }));
+    return { type: 'xtream', server: normalizeServer(server), username, password, backups: typed.length ? typed : backupList(prev) };
   }
   if (loginMode === 'gdrive') {
     const raw = $('#gUrl').value.trim();
@@ -1685,7 +1777,24 @@ async function connect(acct, remember, opts = {}) {
     if (acct.type === 'xtream') {
       xt = makeXtream(secureUrl(acct.server), acct.username, acct.password);
       let r;
-      try { r = await xt.call({}, 30000); } catch (e) { throw httpsHelp(e); }
+      try { r = await xt.call({}, 30000); }
+      catch (e) {
+        // The main address didn't answer: try the account's backup addresses before giving up.
+        const down = e instanceof ApiError && (e.kind === 'network' || e.kind === 'timeout' || (e.kind === 'http' && e.status >= 500));
+        const main = normalizeServer(acct.server);
+        for (const b of down ? backupList(acct).filter((x) => x !== main) : []) {
+          if (gen !== connectGen) return;
+          setBusy(true, `Trying ${hostOf(b)}…`);
+          const x = makeXtream(secureUrl(b), acct.username, acct.password);
+          try {
+            const rr = await x.call({}, 20000);
+            if (rr && rr.user_info) { xt = x; r = rr; setTimeout(() => toast(`${hostOf(main)} didn't answer — signed in through ${hostOf(b)}`, 5000), 900); break; }
+          } catch {}
+        }
+        if (!r) throw httpsHelp(e);
+      }
+      // Favorites, history and settings stay filed under the main address, whichever address answered.
+      xt.keyBase = normalizeServer(secureUrl(acct.server));
       if (!r || typeof r !== 'object' || !r.user_info) throw new ApiError('format');
       const ui = r.user_info;
       if (String(ui.auth) !== '1') throw new Error('The server rejected that username or password.');
@@ -1815,15 +1924,81 @@ function logout() {
 function currentCat() {
   const sec = state.section, d = sd(sec);
   const c = (state.prefs.cat || {})[sec];
-  if (c && (['all', 'fav', 'recent'].includes(c) || !d.cats || d.cats.some((x) => x.id === c))) return c;
+  if (c && (['all', 'fav', 'recent'].includes(c) || !d.cats || visibleCats(sec).some((x) => x.id === c))) return c;
   // First visit: favorites if there are any, otherwise the provider's first category
   // (or everything, for small playlists that are already fully loaded).
   let def = 'all';
   if (state.fav[sec] && state.fav[sec].size) def = 'fav';
-  else if (!d.full && d.cats && d.cats.length) def = d.cats[0].id;
+  else if (!d.full && d.cats && visibleCats(sec).length) def = visibleCats(sec)[0].id;
   if (d.cats) { state.prefs.cat[sec] = def; savePrefs(); }
   return def;
 }
+/* ---------- Hidden and pinned categories (per account, per section) ---------- */
+const hiddenSet = (sec) => new Set(state.prefs.hide[sec] || []);
+function visibleCats(sec) {
+  const d = sd(sec); if (!d.cats) return [];
+  const hide = hiddenSet(sec), pins = state.prefs.pin[sec] || [];
+  const byId = new Map(d.cats.map((c) => [c.id, c]));
+  const pinned = pins.map((id) => byId.get(id)).filter((c) => c && !hide.has(c.id)).map((c) => ({ ...c, pinned: true }));
+  return pinned.concat(d.cats.filter((c) => !hide.has(c.id) && !pins.includes(c.id)));
+}
+/** Hidden categories also leave "All" and search: a title goes when every category it's in is hidden. */
+function withoutHidden(items, sec) {
+  const hide = hiddenSet(sec); if (!hide.size) return items;
+  const out = items.filter((it) => it.sep || !(it.cats && it.cats.length && it.cats.every((c) => hide.has(c))));
+  return out.filter((it, i) => !it.sep || (out[i + 1] && !out[i + 1].sep));
+}
+function openCatEditor() {
+  const sec = state.section, d = sd(sec); if (!d.cats) return;
+  let q = '';
+  const shown = () => d.cats.filter((c) => !q || norm(c.name).includes(q));
+  const save = () => { savePrefs(); renderCats(); refreshView(true); };
+  const rowsHtml = () => {
+    const hide = hiddenSet(sec), pins = state.prefs.pin[sec] || [];
+    const list = shown();
+    const order = list.filter((c) => pins.includes(c.id)).sort((a, b) => pins.indexOf(a.id) - pins.indexOf(b.id)).concat(list.filter((c) => !pins.includes(c.id)));
+    return order.length ? order.map((c) => `<div class="ce-row${hide.has(c.id) ? ' off' : ''}">
+      <span class="ce-n">${esc(c.name)}</span><span class="cc">${fmtN(c.n)}</span>
+      <button type="button" class="ibtn ce-pin${pins.includes(c.id) ? ' on' : ''}" data-act="cepin" data-id="${esc(c.id)}" title="${pins.includes(c.id) ? 'Unpin' : 'Pin to the top'}" aria-pressed="${pins.includes(c.id)}">${icon('pin')}</button>
+      <label class="sw" title="Show in the list"><input type="checkbox" data-id="${esc(c.id)}"${hide.has(c.id) ? '' : ' checked'}><span></span></label></div>`).join('')
+      : '<div class="cat-empty">No matching categories</div>';
+  };
+  const summary = () => { const h = hiddenSet(sec).size; return `${d.cats.length - h} of ${d.cats.length} shown${(state.prefs.pin[sec] || []).length ? ` · ${(state.prefs.pin[sec] || []).length} pinned` : ''}`; };
+  const refresh = () => { $('#ceList').innerHTML = rowsHtml(); $('#ceSum').textContent = summary(); };
+  const setAll = (show) => {
+    const hide = hiddenSet(sec);
+    for (const c of shown()) show ? hide.delete(c.id) : hide.add(c.id);
+    state.prefs.hide[sec] = [...hide]; save(); refresh();
+  };
+  openModal(`<div class="dg ce">
+    <div class="kicker"><span class="txt">${esc(SEC[sec].label)}</span></div>
+    <h2>Edit categories</h2>
+    <p class="dg-sub">Switch off the ones you never use and pin favourites to the top. Hidden categories also leave “All ${esc(SEC[sec].noun)}” and search.</p>
+    <div class="ce-bar"><input class="inp" id="ceQ" placeholder="Filter — e.g. “UK” or “Sports”" autocomplete="off" spellcheck="false">
+      <button type="button" class="btn sm" data-act="ceshow">Show all</button><button type="button" class="btn sm" data-act="cehide">Hide all</button></div>
+    <div class="ce-sum" id="ceSum"></div>
+    <div class="ce-list" id="ceList"></div>
+    <div class="det-actions"><button type="button" class="btn primary" data-act="cedone">Done</button></div>
+  </div>`, {
+    cepin: (b) => {
+      const id = b.dataset.id, pins = state.prefs.pin[sec] = (state.prefs.pin[sec] || []).filter((x) => x !== id);
+      if (b.getAttribute('aria-pressed') !== 'true') { pins.push(id); const hide = hiddenSet(sec); hide.delete(id); state.prefs.hide[sec] = [...hide]; }
+      save(); refresh();
+    },
+    ceshow: () => setAll(true),
+    cehide: () => setAll(false),
+    cedone: () => closeModal(),
+  }, 'sm');
+  refresh();
+  $('#ceQ').addEventListener('input', (e) => { q = norm(e.target.value.trim()); refresh(); });
+  $('#ceList').addEventListener('change', (e) => {
+    const cb = e.target.closest('input[type="checkbox"]'); if (!cb) return;
+    const hide = hiddenSet(sec); cb.checked ? hide.delete(cb.dataset.id) : hide.add(cb.dataset.id);
+    state.prefs.hide[sec] = [...hide]; save();
+    cb.closest('.ce-row').classList.toggle('off', !cb.checked); $('#ceSum').textContent = summary();
+  });
+}
+
 const currentSort = () => (state.prefs.sort || {})[state.section] || 'default';
 
 async function showSection(sec) {
@@ -1859,11 +2034,11 @@ async function showSection(sec) {
 
 const fmtN = (n) => n == null ? '' : n.toLocaleString();
 function catRow(c, cur, ic) {
-  return `<button type="button" class="cat${c.id === cur ? ' on' : ''}" data-cat="${esc(c.id)}">${ic ? icon(ic) : ''}<span class="cn">${esc(c.name)}</span><span class="cc">${fmtN(c.n)}</span></button>`;
+  return `<button type="button" class="cat${c.id === cur ? ' on' : ''}" data-cat="${esc(c.id)}">${ic ? icon(ic) : ''}<span class="cn">${esc(c.name)}</span>${c.pinned ? `<span class="pinmark" title="Pinned">${icon('pin')}</span>` : ''}<span class="cc">${fmtN(c.n)}</span></button>`;
 }
 function virtualCats() {
   const sec = state.section, d = sd(sec);
-  const all = d.full ? d.full.items.reduce((n, it) => n + (it.sep ? 0 : 1), 0) : null;
+  const all = d.full ? withoutHidden(d.full.items, sec).reduce((n, it) => n + (it.sep ? 0 : 1), 0) : null;
   return [
     { id: 'all', name: `All ${SEC[sec].noun}`, n: all, ic: 'grid' },
     { id: 'fav', name: 'Favorites', n: state.fav[sec].size, ic: 'star' },
@@ -1878,12 +2053,16 @@ function renderCats() {
   const f = norm($('#catFilter').value.trim());
   const virt = virtualCats();
   let html = virt.map((c) => catRow(c, cur, c.ic)).join('') + '<div class="cat-sep"></div>';
-  const cats = f ? d.cats.filter((c) => norm(c.name).includes(f)) : d.cats;
-  html += cats.length ? cats.map((c) => catRow(c, cur)).join('') : `<div class="cat-empty">No matching categories</div>`;
+  const vis = visibleCats(state.section);
+  const cats = f ? vis.filter((c) => norm(c.name).includes(f)) : vis;
+  html += cats.length ? cats.map((c) => catRow(c, cur)).join('') : `<div class="cat-empty">${vis.length ? 'No matching categories' : 'Every category is hidden'}</div>`;
+  const nh = d.cats.length - d.cats.filter((c) => !hiddenSet(state.section).has(c.id)).length;
+  html += `<button type="button" class="cat-more" data-edit="1">${nh ? `${nh} hidden · ` : ''}Edit categories</button>`;
   box.innerHTML = html;
   box.scrollTop = scroll;
   $('#catSelect').innerHTML = (cur ? '' : `<option value="" selected>Search results</option>`) +
-    virt.concat(d.cats).map((c) => `<option value="${esc(c.id)}"${c.id === cur ? ' selected' : ''}>${esc(c.name)}${c.n != null ? ` (${fmtN(c.n)})` : ''}</option>`).join('');
+    virt.concat(visibleCats(state.section)).map((c) => `<option value="${esc(c.id)}"${c.id === cur ? ' selected' : ''}>${esc(c.name)}${c.n != null ? ` (${fmtN(c.n)})` : ''}</option>`).join('') +
+    '<option value="__edit">Edit categories…</option>';
 }
 
 const COLLATOR = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
@@ -1910,9 +2089,10 @@ function resolveView() {
   const c = currentCat();
   if (q || c === 'all') {
     if (!d.full) return { wait: 'full' };
-    if (!q) return { items: sortItems(d.full.items.slice()) };
+    const pool = withoutHidden(d.full.items, sec);
+    if (!q) return { items: sortItems(pool.slice()) };
     const toks = q.split(/\s+/).filter(Boolean);
-    return { items: sortItems(d.full.items.filter((it) => !it.sep && toks.every((t) => it._s.includes(t))), q) };
+    return { items: sortItems(pool.filter((it) => !it.sep && toks.every((t) => it._s.includes(t))), q) };
   }
   if (c === 'fav' || c === 'recent') {
     const src = c === 'fav' ? [...state.fav[sec].values()] : state.recent[sec];
@@ -2132,11 +2312,16 @@ listEl.addEventListener('keydown', (e) => {
   const it = state.view[+el.dataset.i]; if (it) activate(it, +el.dataset.i);
 });
 
+$('#catEdit').addEventListener('click', () => openCatEditor());
 $('#catList').addEventListener('click', (e) => {
+  if (e.target.closest('[data-edit]')) { openCatEditor(); return; }
   const b = e.target.closest('[data-cat]'); if (!b) return;
   selectCat(b.dataset.cat);
 });
-$('#catSelect').addEventListener('change', (e) => { if (e.target.value) selectCat(e.target.value); });
+$('#catSelect').addEventListener('change', (e) => {
+  if (e.target.value === '__edit') { renderCats(); openCatEditor(); return; }
+  if (e.target.value) selectCat(e.target.value);
+});
 function selectCat(id) {
   state.prefs.cat[state.section] = id; savePrefs();
   if (state.query) { state.query = ''; $('#q').value = ''; }
@@ -2422,13 +2607,54 @@ function startHls(url, h) {
       }
       runtimeError(new PlayError(isMedia || codec ? 'media' : 'network', d.details), hls);
     });
-    hls.on(Hls.Events.MANIFEST_PARSED, () => tryPlay());
+    hls.on(Hls.Events.MANIFEST_PARSED, () => { applyQualityPref(hls); tryPlay(); updateQualityUi(); });
+    hls.on(Hls.Events.LEVEL_SWITCHED, () => updateQualityUi());
     hls.loadSource(src);
     hls.attachMedia(video);
     return;
   }
   if (video.canPlayType('application/vnd.apple.mpegurl')) { P.engine = 'native'; startNative(url); return; }
   throw new PlayError('unsupported', 'HLS is not supported in this browser');
+}
+
+/* ---------- Quality (streams that offer several) ---------- */
+/** One entry per picture height, best bitrate of each, highest first. */
+function qualityLevels(hls) {
+  const by = new Map();
+  (hls && hls.levels || []).forEach((l, i) => { if (!l.height) return; const cur = by.get(l.height); if (!cur || (l.bitrate || 0) > (cur.bitrate || 0)) by.set(l.height, { height: l.height, bitrate: l.bitrate || 0, i }); });
+  return [...by.values()].sort((a, b) => b.height - a.height);
+}
+const qLabel = (h) => h >= 2160 ? '4K' : `${h}p`;
+function applyQualityPref(hls) {
+  const cap = +settings.quality || 0, lv = qualityLevels(hls);
+  if (!cap || lv.length < 2) { hls.autoLevelCapping = -1; return; }
+  const pick = lv.find((l) => l.height <= cap) || lv[lv.length - 1];
+  hls.autoLevelCapping = pick.i;
+  hls.nextLevel = pick.i;
+}
+function updateQualityUi() {
+  const w = $('#npQ'); if (!w) return;
+  const hls = P.hls, lv = qualityLevels(hls);
+  if (!hls || lv.length < 2) { w.hidden = true; return; }
+  w.hidden = false;
+  const cur = hls.levels[hls.currentLevel] || null;
+  const auto = hls.autoLevelEnabled;
+  $('#npQBtn .t').textContent = `${auto ? 'Auto' : ''}${cur && cur.height ? `${auto ? ' · ' : ''}${qLabel(cur.height)}` : ''}` || 'Quality';
+  const capped = +settings.quality || 0;
+  $('#npQMenu').innerHTML = `<button type="button" role="menuitemradio" data-np="q" data-q="auto">Automatic${auto && !capped ? '<span class="ck">✓</span>' : ''}</button><hr>` +
+    lv.map((l) => `<button type="button" role="menuitemradio" data-np="q" data-q="${l.height}">${qLabel(l.height)}${l.height >= 720 && l.height < 2160 ? ' <span class="sub">HD</span>' : ''}${(!auto || capped) && cur && cur.height === l.height ? '<span class="ck">✓</span>' : ''}</button>`).join('') +
+    '<div class="keys-mini">Your choice is remembered for other channels.</div>';
+}
+function setQuality(v) {
+  const hls = P.hls; if (!hls) return;
+  if (v === 'auto') { settings.quality = 'auto'; hls.autoLevelCapping = -1; hls.currentLevel = -1; toast('Quality: automatic'); }
+  else {
+    const h = +v, l = qualityLevels(hls).find((x) => x.height === h);
+    settings.quality = String(h);
+    if (l) { hls.autoLevelCapping = l.i; hls.currentLevel = l.i; }
+    toast(`Quality: ${qLabel(h)} — used for other channels too, when they offer it`, 4000);
+  }
+  saveSettings(); updateQualityUi();
 }
 
 async function startTs(url, h) {
@@ -2503,7 +2729,7 @@ function overlay(mode, msg, opts = {}) {
     ov.innerHTML = `<div class="ov-card"><div class="ov-ic info">${icon(opts.label && !opts.act ? 'diag' : 'ext')}</div>
       <h4>${esc(opts.title || msg)}</h4>${opts.title ? `<div class="msg">${esc(msg)}</div>` : ''}
       <div class="acts"><button type="button" class="btn primary" data-act="${opts.act || 'retry'}">${icon('play', 'fill')}${esc(opts.label || 'Watch here instead')}</button></div>
-      ${opts.windowBtns ? links([['tab', 'Reopen tab'], ['popup', 'Pop-up window']]) : ''}</div>`;
+      ${opts.windowBtns ? links([['tab', 'Reopen tab'], streamServers().length > 1 && ['nextsrv', 'Next server'], ['popup', 'Pop-up window']]) : ''}</div>`;
     video.controls = false;
     return;
   }
@@ -2524,6 +2750,7 @@ $('#ov').addEventListener('click', (e) => {
   if (act === 'retry') playItem(P.item, P.ctx);
   else if (act === 'here') playItem(P.item, P.ctx, { here: true });
   else if (act === 'tab' || act === 'popup') openStreamWindow(P.item, act);
+  else if (act === 'nextsrv') nextServer(P.item);
   else if (act === 'force') playItem(P.item, P.ctx, { force: true });
   else if (act === 'copy') copyLink(P.item);
   else if (act === 'diag') openDiagnose(P.item);
@@ -2536,7 +2763,7 @@ $('#ov').addEventListener('click', (e) => {
    replaces the stream instead of opening a second connection. */
 const windowBtns = () => `<button type="button" class="btn" data-act="tab">${icon('ext')}New tab</button><button type="button" class="btn" data-act="popup">${icon('pip')}Pop-up window</button>`;
 function windowUrl(it) {
-  const list = P.item === it && P.urls.length ? P.urls : candidates(it);
+  const list = candidates(it); // fresh: the server may have just changed
   const pick = list.find((c) => c.engine === 'hls') || list.find((c) => c.engine === 'native') || list[0];
   return pick ? pick.url : '';
 }
@@ -2545,13 +2772,21 @@ function openStreamWindow(it, mode) {
   if (!url) { toast('No stream address for this item.'); return; }
   // Stop playing here first, so a one-connection plan has its connection free for the new window.
   if (P.started || P.engine) { P.gen++; teardown(); }
-  P.item = it; P.url = url;
+  P.item = it; P.url = url; P.windowMode = mode;
   const w = mode === 'popup'
     ? window.open(url, 'iptvPlayerPopup', 'popup,width=1024,height=576')
     : window.open(url, 'iptvPlayerTab');
   if (!w) { toast('Your browser blocked the new window. Allow pop-ups for this page (icon at the right of the address bar), then try again.', 7000); return; }
   try { w.focus(); } catch {}
   overlay('info', 'Pick another channel here and it switches there too.', { title: `Playing in a ${mode === 'popup' ? 'pop-up window' : 'new tab'}`, act: 'here', label: 'Watch here instead', windowBtns: true });
+}
+
+/** Switch video to the provider's next address and reopen the tab / pop-up there. */
+function nextServer(it) {
+  const xt = state.xt, list = streamServers(); if (!xt || list.length < 2) return;
+  xt.streamAlt = list[(list.indexOf(xt.streamBase) + 1) % list.length];
+  toast(`Now using ${hostOf(xt.streamBase)}`);
+  openStreamWindow(it, P.windowMode || 'tab');
 }
 
 async function copyLink(it) { toast((await copyText(streamUrl(it))) ? 'Stream link copied' : "Couldn't copy the link"); }
@@ -2604,6 +2839,8 @@ async function playItem(item, ctx = {}, opts = {}) {
   }
   if (verdict && verdict.level === 'warn' && !opts.retries) toast(verdict.text, 6000);
   let lastErr = null, busyTries = 0;
+  const tried = new Set(), altBefore = state.xt ? state.xt.streamAlt : undefined;
+  for (;;) {
   for (let i = 0; i < P.urls.length; i++) {
     const c = P.urls[i];
     if (gen !== P.gen) return;
@@ -2616,6 +2853,7 @@ async function playItem(item, ctx = {}, opts = {}) {
       if (c.engine === 'hls' && lastErr && P.urls.some((x) => x.engine === 'native')) P.hlsFirst = true;
       if (c.engine === 'native' && lastErr && P.urls.some((x) => x.engine === 'hls' && x.url === c.url)) P.hlsFirst = false;
       if (!video.paused || video.readyState >= 2) overlay(null);
+      if (tried.size) toast(`Playing from ${hostOf(state.xt.streamBase)} — the other address didn't work`, 4500);
       afterStart(item, opts);
       return;
     } catch (e) {
@@ -2636,6 +2874,18 @@ async function playItem(item, ctx = {}, opts = {}) {
       if (!lastErr || (rank[e.kind] || 0) > (rank[lastErr.kind] || 0)) lastErr = e;
       console.warn('[IPTV] could not play', c.engine, c.url, e);
     }
+  }
+  if (gen !== P.gen) return;
+  // Nothing worked on this address: try the provider's other addresses (backup servers).
+  const xt = state.xt;
+  if (!xt || item.url || !lastErr || lastErr.kind === 'media') break;
+  tried.add(xt.streamBase);
+  const next = streamServers().find((x) => !tried.has(x));
+  if (!next) { xt.streamAlt = altBefore; break; }
+  xt.streamAlt = next;
+  overlay('loading', `Trying ${hostOf(next)}…`);
+  P.urls = candidates(item);
+  if (singleConn()) { await sleep(1200); if (gen !== P.gen) return; }
   }
   if (gen !== P.gen) return;
   P.url = (P.urls[0] || {}).url || '';
@@ -2750,6 +3000,134 @@ function toggleTheater(force) {
   placeTabs();
   renderNowPlaying();
 }
+
+/* ---- 10b-downloads.js ---- */
+/* =====================================================================
+   Downloads (movies & episodes). Chrome/Edge: pick where to save, then the
+   file streams straight to disk with progress (no size limit, no memory
+   use). Elsewhere, or when the provider doesn't let pages save its files,
+   the browser downloads it itself.
+   ===================================================================== */
+const DL = { job: null, t: 0 };
+const fmtBytes = (n) => n >= 1e9 ? `${(n / 1e9).toFixed(2)} GB` : n >= 1e6 ? `${(n / 1e6).toFixed(n >= 1e8 ? 0 : 1)} MB` : `${Math.max(0, Math.round(n / 1e3))} KB`;
+function fileUrlOf(it) {
+  const list = candidates(it);
+  const f = list.find((c) => c.engine === 'native') || list[0];
+  return f ? f.url : '';
+}
+function fileNameOf(it, url) {
+  const ext = String(it.ext || '').toLowerCase() || (stripQuery(url).match(/\.(\w{2,4})$/) || [])[1] || 'mp4';
+  const pad = (n) => String(n || 0).padStart(2, '0');
+  const base = it.kind === 'episode' ? `${it.series.name} S${pad(it.season)}E${pad(it.epNum)}${it.name ? ' - ' + it.name : ''}` : (it.year ? `${stripYear(it.name)} (${it.year})` : it.name);
+  return `${String(base).replace(/[\\/:*?"<>|\u0000-\u001f]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 120) || 'video'}.${ext}`;
+}
+async function downloadItem(it) {
+  if (!it || !(it.kind === 'movie' || it.kind === 'episode')) return;
+  if (DL.job && DL.job.state === 'run') { toast('A download is already running — cancel it or wait until it finishes.', 4000); return; }
+  const url = fileUrlOf(it); if (!url) { toast('No file address for this title.'); return; }
+  const name = fileNameOf(it, url);
+  // One-connection plans: the download needs the connection, so stop playing here.
+  if (singleConn() && (P.started || P.engine)) { P.gen++; teardown(); overlay('info', 'Playback stopped so the download can use your connection.', { label: 'Watch again' }); }
+  let handle = null;
+  // Only offer "save to…" when the provider lets this page read the file; otherwise the browser downloads it.
+  if (window.showSaveFilePicker && await canRead(url)) {
+    try { handle = await window.showSaveFilePicker({ suggestedName: name, id: 'iptv-downloads' }); }
+    catch (e) { if (e && e.name === 'AbortError') return; handle = null; }
+  }
+  if (!handle) { DL.job = { name, url, state: 'link', why: '' }; renderDl(); return; }
+  runDownload({ name, url, handle, got: 0 });
+}
+/** Can this page read the file? (Starts the request, then drops it as soon as the server answers.) */
+async function canRead(url) {
+  const c = new AbortController(), t = setTimeout(() => c.abort(), 4000);
+  try { const r = await fetch(url, { signal: c.signal, credentials: 'omit', cache: 'no-store' }); c.abort(); return r.ok; }
+  catch { return false; }
+  finally { clearTimeout(t); }
+}
+async function runDownload(job) {
+  const ctrl = new AbortController();
+  Object.assign(job, { ctrl, state: 'run', why: '', t0: performance.now(), got0: job.got || 0 });
+  DL.job = job; renderDl();
+  let writable = null;
+  try {
+    const resume = job.got > 0;
+    let res;
+    try { res = await fetch(job.url, { signal: ctrl.signal, credentials: 'omit', cache: 'no-store', headers: resume ? { Range: `bytes=${job.got}-` } : {} }); }
+    catch (e) {
+      // Some servers refuse "continue from here" requests from web pages: start over instead.
+      if (!resume || ctrl.signal.aborted) throw e;
+      res = await fetch(job.url, { signal: ctrl.signal, credentials: 'omit', cache: 'no-store' });
+    }
+    if (!res.ok) throw Object.assign(new Error(`HTTP ${res.status}`), { http: res.status });
+    const partial = resume && res.status === 206;
+    if (resume && !partial) job.got = 0; // the server can't resume, so start over
+    job.got0 = job.got;
+    const len = +res.headers.get('content-length') || 0;
+    job.total = len ? len + job.got : (job.total || 0);
+    writable = await job.handle.createWritable({ keepExistingData: partial });
+    if (partial) await writable.seek(job.got); else await writable.truncate(0);
+    const reader = res.body.getReader();
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      await writable.write(value);
+      job.got += value.length;
+      if (performance.now() - DL.t > 400) { DL.t = performance.now(); renderDl(); }
+    }
+    await writable.close(); writable = null;
+    job.state = 'done'; renderDl();
+    toast(`Saved “${job.name}”`);
+    setTimeout(() => { if (DL.job === job) { DL.job = null; renderDl(); } }, 8000);
+  } catch (e) {
+    if (writable) { try { await writable.close(); } catch { try { await writable.abort(); } catch {} } }
+    if (ctrl.signal.aborted) { DL.job = null; renderDl(); toast('Download cancelled'); return; }
+    if (!job.got) {
+      // Nothing arrived: usually the provider doesn't let web pages save its files. Let the browser do it.
+      job.state = 'link';
+      job.why = e.http ? `The server refused the file (HTTP ${e.http}).` : '';
+    } else {
+      job.state = 'fail';
+      job.why = `The connection dropped after ${fmtBytes(job.got)}.`;
+    }
+    renderDl();
+  }
+}
+function renderDl() {
+  const box = $('#dl'), j = DL.job;
+  if (!j) { box.hidden = true; box.innerHTML = ''; return; }
+  box.hidden = false;
+  const title = `<b class="dl-n" title="${esc(j.name)}">${esc(j.name)}</b>`;
+  if (j.state === 'run') {
+    const pct = j.total ? Math.min(100, j.got / j.total * 100) : 0;
+    const secs = (performance.now() - j.t0) / 1000, rate = secs > 1 ? (j.got - j.got0) / secs : 0;
+    const left = rate && j.total ? (j.total - j.got) / rate : 0;
+    const eta = left > 90 ? `${Math.round(left / 60)} min left` : left > 0 ? `${Math.max(1, Math.round(left))} s left` : '';
+    box.innerHTML = `<div class="dl-ic">${icon('download')}</div><div class="dl-b">${title}
+      <div class="bar${j.total ? '' : ' ind'}"><i style="width:${j.total ? pct.toFixed(1) : 30}%"></i></div>
+      <span class="dl-s">${fmtBytes(j.got)}${j.total ? ` of ${fmtBytes(j.total)}` : ''}${rate ? ` · ${(rate / 1e6).toFixed(1)} MB/s` : ''}${eta ? ` · ${eta}` : ''}</span></div>
+      <button type="button" class="ibtn" data-dl="cancel" title="Cancel download" aria-label="Cancel">${icon('x')}</button>`;
+  } else if (j.state === 'done') {
+    box.innerHTML = `<div class="dl-ic ok">✓</div><div class="dl-b">${title}<span class="dl-s">Saved${j.total ? ` · ${fmtBytes(j.total)}` : ''}</span></div>
+      <button type="button" class="ibtn" data-dl="close" aria-label="Close">${icon('x')}</button>`;
+  } else if (j.state === 'fail') {
+    box.innerHTML = `<div class="dl-ic warn">!</div><div class="dl-b">${title}<span class="dl-s">${esc(j.why)}</span>
+      <span class="dl-acts"><button type="button" class="btn sm primary" data-dl="resume">Resume</button></span></div>
+      <button type="button" class="ibtn" data-dl="close" aria-label="Close">${icon('x')}</button>`;
+  } else {
+    box.innerHTML = `<div class="dl-ic">${icon('download')}</div><div class="dl-b">${title}
+      <span class="dl-s">${j.why ? esc(j.why) + ' ' : ''}Your browser will save it — if it starts playing in the new tab instead, use the ⋮ menu or right-click → Save video as.</span>
+      <span class="dl-acts"><a class="btn sm primary" href="${esc(j.url)}" download="${esc(j.name)}" target="_blank" rel="noopener noreferrer" data-dl="close">${icon('download')}Download</a></span></div>
+      <button type="button" class="ibtn" data-dl="close" aria-label="Close">${icon('x')}</button>`;
+  }
+}
+$('#dl').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-dl]'); if (!b || !DL.job) return;
+  const j = DL.job, a = b.dataset.dl;
+  if (a === 'cancel' && j.ctrl) j.ctrl.abort();
+  else if (a === 'resume') runDownload(j);
+  else if (a === 'close') { if (b.tagName === 'A') setTimeout(() => { DL.job = null; renderDl(); }, 300); else { DL.job = null; renderDl(); } }
+});
+window.addEventListener('beforeunload', (e) => { if (DL.job && DL.job.state === 'run') { e.preventDefault(); e.returnValue = ''; } });
 
 /* ---- 11-media-session.js ---- */
 /* ---------- Chrome integration: toolbar media controls, media keys, picture-in-picture ---------- */
@@ -3494,12 +3872,17 @@ function renderNowPlaying() {
     <div class="np-actions">
       ${canStep ? `<button type="button" class="ibtn" data-np="prev" title="Previous${P.live ? ' (↑)' : ''}" aria-label="Previous">${icon('prev')}</button><button type="button" class="ibtn" data-np="next" title="Next${P.live ? ' (↓)' : ''}" aria-label="Next">${icon('next')}</button><span class="gap"></span>` : ''}
       ${favTarget && favTarget.sec ? `<button type="button" class="ibtn${fav ? ' on' : ''}" data-np="fav" title="${fav ? 'Remove from favorites' : 'Add to favorites'}" aria-label="Favorite" aria-pressed="${!!fav}">${icon('star')}</button>` : ''}
+      <span class="menu-wrap" id="npQ" hidden>
+        <button type="button" class="btn open q" id="npQBtn" data-np="qmore" aria-haspopup="menu" aria-expanded="false" title="Picture quality"><span class="t">Quality</span><svg class="i chev" viewBox="0 0 24 24"><path d="m7 9 5 5 5-5"/></svg></button>
+        <div class="menu" id="npQMenu" role="menu" hidden></div>
+      </span>
       <span class="menu-wrap">
         <button type="button" class="btn open" data-np="more" aria-haspopup="menu" aria-expanded="false">${icon('ext')}<span class="t">Open in…</span><svg class="i chev" viewBox="0 0 24 24"><path d="m7 9 5 5 5-5"/></svg></button>
         <div class="menu" id="npMenu" role="menu" hidden>
           <button type="button" role="menuitem" data-np="tab">${icon('ext')}New tab</button>
           <button type="button" role="menuitem" data-np="popup">${icon('pip')}Pop-up window</button>
           <button type="button" role="menuitem" data-np="ext">${icon('file')}VLC or another app</button>
+          ${it.kind === 'movie' || it.kind === 'episode' ? `<button type="button" role="menuitem" data-np="dl">${icon('download')}Download</button>` : ''}
           <hr>
           <button type="button" role="menuitem" data-np="copy">${icon('link')}Copy stream link</button>
           <hr>
@@ -3515,15 +3898,21 @@ function renderNowPlaying() {
     ${it.kind === 'episode' && it.plot ? `<p class="np-plot">${esc(it.plot)}</p>` : ''}
     ${nextEp ? `<div class="upnext" data-np="next">${icon('next')}<div><small>Up next</small><b>${esc(episodeLabel(nextEp))}</b></div></div>` : ''}`;
   if (it.kind === 'live' || it.kind === 'catchup') renderEpg();
+  updateQualityUi();
 }
 
-function closeNpMenu() { const m = $('#npMenu'); if (m && !m.hidden) { m.hidden = true; const t = $('[data-np="more"]'); if (t) t.setAttribute('aria-expanded', 'false'); } }
+function closeNpMenu(except) {
+  document.querySelectorAll('#np .menu').forEach((m) => { if (m === except || m.hidden) return; m.hidden = true; const t = m.parentElement.querySelector('[aria-expanded]'); if (t) t.setAttribute('aria-expanded', 'false'); });
+}
 document.addEventListener('click', (e) => { if (!e.target.closest('.menu-wrap')) closeNpMenu(); });
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeNpMenu(); });
 $('#np').addEventListener('click', (e) => {
   const b = e.target.closest('[data-np]'); if (!b || !P.item) return;
   const it = P.item;
-  if (b.dataset.np === 'more') { const m = $('#npMenu'); m.hidden = !m.hidden; b.setAttribute('aria-expanded', String(!m.hidden)); return; }
+  if (b.dataset.np === 'more' || b.dataset.np === 'qmore') {
+    const m = $(b.dataset.np === 'more' ? '#npMenu' : '#npQMenu'); closeNpMenu(m);
+    m.hidden = !m.hidden; b.setAttribute('aria-expanded', String(!m.hidden)); return;
+  }
   closeNpMenu();
   switch (b.dataset.np) {
     case 'fav': {
@@ -3546,6 +3935,8 @@ $('#np').addEventListener('click', (e) => {
     case 'copy': copyLink(it); break;
     case 'ext': openExternal(it); break;
     case 'tab': case 'popup': openStreamWindow(it, b.dataset.np); break;
+    case 'dl': downloadItem(it); break;
+    case 'q': setQuality(b.dataset.q); break;
     case 'stop': stopPlayback(); break;
     case 'guide': openGuide(ownerOf(it)); break;
     case 'golive': { const ch = ownerOf(it); const i = state.view.indexOf(ch); playItem(ch, i >= 0 ? { list: state.view, index: i } : {}); break; }
@@ -3615,6 +4006,7 @@ async function openMovie(it) {
     fav: (b) => { const on = toggleFav(it); b.outerHTML = favBtn(); toast(on ? 'Added to favorites' : 'Removed from favorites'); if (state.section === 'movie') { renderCats(); markStar(it, on); } },
     copy: () => copyLink(it),
     ext: () => openExternal(it),
+    dl: () => downloadItem(it),
   };
   const render = (info, loading) => {
     const pos = getPos(it);
@@ -3645,6 +4037,7 @@ async function openMovie(it) {
             ${resume ? `<button type="button" class="btn" data-act="restart">Start over</button>` : ''}
             ${favBtn()}
             ${bad ? '' : `<button type="button" class="btn ghost" data-act="ext" title="Download a playlist file for VLC">${icon('ext')}VLC</button>`}
+            <button type="button" class="btn ghost" data-act="dl">${icon('download')}Download</button>
             <button type="button" class="btn ghost" data-act="copy">${icon('link')}Copy link</button>
           </div>
           ${loading ? `<div class="det-loading"><span class="spin sm"></span>Loading details…</div>` : ''}
@@ -3726,6 +4119,7 @@ async function openSeries(it) {
     resume: () => { const t = resumeTarget(); if (t) playEp(t.ep, t.fromStart); },
     season: (b) => { curSeason = +b.dataset.s; renderEpisodes(); },
     ep: (b) => { const ep = flat[+b.dataset.e]; if (ep) playEp(ep, (getPos(ep) || {}).done); },
+    dlep: (b) => { const ep = flat[+b.dataset.e]; if (ep) downloadItem(ep); },
   };
   const resumeTarget = () => {
     if (!flat.length) return null;
@@ -3753,7 +4147,8 @@ async function openSeries(it) {
           ${p && !p.done ? `<span class="prog"><i style="width:${pct}%"></i></span>` : ''}<span class="play">${icon('play')}</span></div>
         <div class="ep-b"><div class="ep-t">${ep.name ? `<span class="n">E${ep.epNum}</span><span>${esc(ep.name)}</span>` : `<span>Episode ${ep.epNum}</span>`}</div>
           <div class="ep-m">${ep.dur ? `<span>${fmtRuntime(ep.dur)}</span>` : ''}${ep.ci ? `<span>${esc(codecSummary(ep.ci))}</span>` : ''}${p && p.done ? `<span class="done">✓ Watched</span>` : p ? `<span>${fmtDur(p.d - p.t)} left</span>` : ''}${(() => { const v = codecVerdict(ep.ci); return v ? `<span class="badge ${v.level}" title="${esc(v.text)}">${esc(v.short)}</span>` : ''; })()}</div>
-          ${ep.plot ? `<p class="ep-p">${esc(ep.plot)}</p>` : ''}</div></div>`;
+          ${ep.plot ? `<p class="ep-p">${esc(ep.plot)}</p>` : ''}</div>
+        <button type="button" class="ibtn ep-dl" data-act="dlep" data-e="${idx}" title="Download this episode" aria-label="Download">${icon('download')}</button></div>`;
     }).join('');
   };
   const render = (loading) => {
@@ -4317,8 +4712,12 @@ function openPop() {
       <select class="inp" id="popPlay"><option value="page">In this page</option><option value="tab">In a new tab</option><option value="popup">In a pop-up window</option></select></label>
       ${state.xt ? `<label class="field">Live stream format
       <select class="inp" id="popFmt"><option value="auto">Automatic</option><option value="m3u8">HLS (.m3u8)</option><option value="ts">MPEG-TS (.ts)</option></select></label>
+      <label class="field"><span>Preferred quality <span class="opt">— for streams that offer several</span></span>
+      <select class="inp" id="popQuality"><option value="auto">Automatic (best your connection allows)</option><option value="1080">Up to 1080p</option><option value="720">Up to 720p</option><option value="480">Up to 480p — data saver</option></select></label>
       <label class="field"><span>Stream server <span class="opt">— optional, play video from another of your provider's addresses</span></span>
-      <input class="inp" id="popStream" placeholder="${esc(state.xt.base)}" spellcheck="false" inputmode="url"></label>` : ''}
+      <input class="inp" id="popStream" placeholder="${esc(state.xt.base)}" spellcheck="false" inputmode="url"></label>
+      <label class="field"><span>Backup servers <span class="opt">— one per line; used automatically when the main address or its video doesn't work</span></span>
+      <textarea class="inp" id="popBackups" rows="3" placeholder="http://backup1.example&#10;http://backup2.example" spellcheck="false"></textarea></label>` : ''}
     </div></details>
     <details class="pgroup"><summary>${icon('guide')}TV guide</summary><div class="pbody">
       <div class="field"><span>Guide links (XMLTV) <span class="opt">— one per line</span></span>
@@ -4334,6 +4733,7 @@ function openPop() {
       <button type="button" class="btn" data-pop="diag">${icon('diag')}Diagnose</button>
       ${a.type === 'xtream' || (a.url && a.direct !== false) ? `<button type="button" class="btn" data-pop="reload">${icon('refresh')}Reload</button>` : ''}
     </div>
+    <div class="btns"><button type="button" class="btn" data-pop="backup">${icon('download')}Backup &amp; restore</button></div>
     <div class="btns"><button type="button" class="btn danger" data-pop="logout">${icon('logout')}Sign out</button></div>`;
   const xa = $('#popXml');
   if (xa) { xa.value = (settings.xmltv || []).join('\n'); xmltvStatusUi(); }
@@ -4352,6 +4752,17 @@ function openPop() {
   if (sel) { sel.value = settings.format; sel.addEventListener('change', () => { settings.format = sel.value; saveSettings(); toast('Applies to the next channel you open'); }); }
   const pp = $('#popPlay');
   if (pp) { pp.value = settings.playMode || 'page'; pp.addEventListener('change', () => { settings.playMode = pp.value; saveSettings(); const sv = pp.closest('.pgroup').querySelector('.sv'); if (sv) sv.textContent = { page: 'In this page', tab: 'New tab', popup: 'Pop-up' }[pp.value]; toast(pp.value === 'page' ? 'Channels play in this page' : `Channels open in a ${pp.value === 'popup' ? 'pop-up window' : 'new tab'} — applies to the next channel you pick`); }); }
+  const pq = $('#popQuality');
+  if (pq) { pq.value = ['1080', '720', '480'].includes(String(settings.quality)) ? String(settings.quality) : 'auto'; pq.addEventListener('change', () => { settings.quality = pq.value; saveSettings(); if (P.hls) applyQualityPref(P.hls); updateQualityUi(); toast('Quality preference saved'); }); }
+  const pb = $('#popBackups');
+  if (pb) {
+    pb.value = backupList(state.acct).join('\n');
+    pb.addEventListener('change', () => {
+      state.acct.backups = parseServerList(pb.value); pb.value = state.acct.backups.join('\n');
+      updateSavedAccount(state.acct);
+      toast(state.acct.backups.length ? `${state.acct.backups.length} backup server${state.acct.backups.length > 1 ? 's' : ''} saved` : 'Backup servers cleared');
+    });
+  }
   const ps = $('#popStream');
   if (ps) {
     ps.value = settings.streamServer || '';
@@ -4373,6 +4784,7 @@ pop.addEventListener('click', (e) => {
   const b = e.target.closest('[data-pop]'); if (!b) return;
   if (b.dataset.pop === 'logout') { closePop(); logout(); }
   if (b.dataset.pop === 'diag') { closePop(); openDiagnose(P.item); }
+  if (b.dataset.pop === 'backup') { closePop(); openBackup(); }
   if (b.dataset.pop === 'xmlsave') {
     settings.xmltv = ($('#popXml').value || '').split(/[\n,]+/).map((x) => x.trim()).filter(Boolean);
     saveSettings();
@@ -4385,6 +4797,80 @@ pop.addEventListener('click', (e) => {
   }
 });
 document.addEventListener('click', (e) => { if (!pop.hidden && !pop.contains(e.target)) closePop(); });
+
+/* ---- 19b-backup.js ---- */
+/* =====================================================================
+   Backup & restore — move accounts, favorites, hidden categories and
+   settings to another computer or browser.
+   ===================================================================== */
+const BACKUP_APP = 'iptv-player-backup';
+function backupData() {
+  const data = {};
+  try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith('iptvp.')) data[k] = localStorage.getItem(k); } } catch {}
+  return { app: BACKUP_APP, version: 1, created: new Date().toISOString(), data };
+}
+function backupSummary(b) {
+  const d = b.data || {};
+  let accts = 0, favs = 0;
+  try { accts = arr(JSON.parse(d['iptvp.accounts'] || '[]')).length; } catch {}
+  for (const [k, v] of Object.entries(d)) if (/\.fav\|/.test(k)) { try { favs += arr(JSON.parse(v)).length; } catch {} }
+  const when = b.created ? new Date(b.created).toLocaleString(undefined, { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }) : '';
+  return `${accts} account${accts === 1 ? '' : 's'}, ${favs} favorite${favs === 1 ? '' : 's'}${when ? ` · saved ${when}` : ''}`;
+}
+function parseBackup(text) {
+  let b; try { b = JSON.parse(String(text || '').trim()); } catch { throw new Error("That isn't a backup from this player."); }
+  if (!b || b.app !== BACKUP_APP || !b.data || typeof b.data !== 'object') throw new Error("That isn't a backup from this player.");
+  return b;
+}
+function applyBackup(b) {
+  try {
+    const old = []; for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith('iptvp.')) old.push(k); }
+    old.forEach((k) => localStorage.removeItem(k));
+    for (const [k, v] of Object.entries(b.data)) if (k.startsWith('iptvp.') && typeof v === 'string') localStorage.setItem(k, v);
+  } catch (e) { toast("Couldn't restore — this browser didn't allow saving the data.", 6000); return; }
+  toast('Restored — reloading…');
+  setTimeout(() => location.reload(), 700);
+}
+function openBackup() {
+  let pending = null;
+  const html = `<div class="dg bk">
+    <div class="kicker"><span class="txt">Backup &amp; restore</span></div>
+    <h2>Take your setup with you</h2>
+    <p class="dg-sub">Your accounts, favorites, recently watched, hidden and pinned categories and settings are saved in this browser only. Save a backup here, then restore it on another computer.</p>
+    <div class="bk-sec"><b>Back up this browser</b>
+      <div class="det-actions"><button type="button" class="btn primary" data-act="bksave">${icon('download')}Save backup file</button><button type="button" class="btn" data-act="bkcopy">${icon('link')}Copy as text</button></div>
+      <p class="hint">The backup includes your saved logins (usernames and passwords), so keep it private.</p></div>
+    <div class="bk-sec"><b>Restore a backup</b>
+      <div class="det-actions"><label class="btn">${icon('file')}Choose backup file<input type="file" id="bkFile" accept=".json,application/json,text/plain" hidden></label></div>
+      <textarea class="inp" id="bkText" rows="3" placeholder="…or paste the backup text here" spellcheck="false"></textarea>
+      <div class="bk-confirm" id="bkConfirm" hidden><span id="bkWhat"></span><button type="button" class="btn primary" data-act="bkapply">Restore now</button></div>
+      <p class="err" id="bkErr"></p>
+      <p class="hint">Restoring replaces everything this browser has saved for the player.</p></div>
+  </div>`;
+  const check = (text) => {
+    $('#bkErr').textContent = ''; $('#bkConfirm').hidden = true; pending = null;
+    if (!String(text || '').trim()) return;
+    try { pending = parseBackup(text); $('#bkWhat').textContent = backupSummary(pending); $('#bkConfirm').hidden = false; }
+    catch (e) { $('#bkErr').textContent = e.message; }
+  };
+  openModal(html, {
+    bksave: () => {
+      const b = backupData();
+      const blob = new Blob([JSON.stringify(b)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `iptv-player-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+      toast(`Backup saved (${backupSummary(b).split(' · ')[0]})`);
+    },
+    bkcopy: async () => { toast((await copyText(JSON.stringify(backupData()))) ? 'Backup copied — paste it into “Restore” on the other computer' : "Couldn't copy", 4500); },
+    bkapply: () => { if (pending) applyBackup(pending); },
+  }, 'sm');
+  $('#bkFile').addEventListener('change', async (e) => { const f = e.target.files && e.target.files[0]; if (!f) return; try { check(await readFileText(f)); } catch (err) { $('#bkErr').textContent = err.message; } e.target.value = ''; });
+  $('#bkText').addEventListener('input', (e) => check(e.target.value));
+}
+$('#restoreLink').addEventListener('click', openBackup);
 
 /* ---- 20-keyboard.js ---- */
 /* =====================================================================
