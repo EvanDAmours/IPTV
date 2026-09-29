@@ -647,6 +647,12 @@ textarea.inp{height:auto;min-height:62px;padding:10px 14px;resize:vertical;font-
 .bk-confirm{display:flex;align-items:center;gap:12px;justify-content:space-between;padding:10px 12px;border-radius:12px;background:rgba(48,209,88,.1);font-size:13px}
 .bk .err:empty{display:none}
 
+/* copy from another account */
+.cp-row .ce-n{display:flex;flex-direction:column;gap:2px;white-space:normal}
+.cp-row .ce-n b{font-weight:600;font-size:14px}
+.cp-sub{font-size:12px;color:var(--dim)}
+.cp .dg-sub b{color:var(--text)}
+
 /* quality menu */
 .np-actions .btn.open.q{padding:0 12px}
 .menu .ck{margin-left:auto;color:var(--text);font-weight:600}
@@ -1905,6 +1911,7 @@ function enterApp(acct, xt, info, data) {
   renderNowPlaying();
   const start = state.sections.includes(state.prefs.section) ? state.prefs.section : state.sections[0];
   showSection(start);
+  setTimeout(() => { if (state.acct === acct) offerCopy(); }, 1200);
   // Live channels are what people zap through and search most, so fetch the whole list quietly.
   if (xt) ensureCats('live').then(() => ensureFull('live')).catch(() => {});
   if (xt && acct.type === 'm3u') setTimeout(() => { if (state.xt === xt) enrichFromProvider(xt); }, 1500);
@@ -4735,7 +4742,7 @@ function openPop() {
       <button type="button" class="btn" data-pop="diag">${icon('diag')}Diagnose</button>
       ${a.type === 'xtream' || (a.url && a.direct !== false) ? `<button type="button" class="btn" data-pop="reload">${icon('refresh')}Reload</button>` : ''}
     </div>
-    <div class="btns"><button type="button" class="btn" data-pop="backup">${icon('download')}Backup &amp; restore</button></div>
+    <div class="btns"><button type="button" class="btn" data-pop="backup">${icon('download')}Backup &amp; restore</button><button type="button" class="btn" data-pop="copyacct">${icon('refresh')}Copy from account</button></div>
     <div class="btns"><button type="button" class="btn danger" data-pop="logout">${icon('logout')}Sign out</button></div>`;
   const xa = $('#popXml');
   if (xa) { xa.value = (settings.xmltv || []).join('\n'); xmltvStatusUi(); }
@@ -4787,6 +4794,7 @@ pop.addEventListener('click', (e) => {
   if (b.dataset.pop === 'logout') { closePop(); logout(); }
   if (b.dataset.pop === 'diag') { closePop(); openDiagnose(P.item); }
   if (b.dataset.pop === 'backup') { closePop(); openBackup(); }
+  if (b.dataset.pop === 'copyacct') { closePop(); openCopyPicker(); }
   if (b.dataset.pop === 'xmlsave') {
     settings.xmltv = ($('#popXml').value || '').split(/[\n,]+/).map((x) => x.trim()).filter(Boolean);
     saveSettings();
@@ -4799,6 +4807,118 @@ pop.addEventListener('click', (e) => {
   }
 });
 document.addEventListener('click', (e) => { if (!pop.hidden && !pop.contains(e.target)) closePop(); });
+
+/* ---- 19a-copy-account.js ---- */
+/* =====================================================================
+   Copy favorites, hidden/pinned categories and history from another
+   account — e.g. new login details from the same provider. Channel,
+   movie and category IDs stay the same with the same provider, so
+   everything carries over as-is. Copying adds; nothing is removed.
+   ===================================================================== */
+const PROFILE_RE = /^iptvp\.(fav\|(?:live|movie|series)|recent\|(?:live|movie|series)|pos|lastep|prefs|copyAsked)\|(.+)$/;
+const readJson = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch { return d; } };
+/** Every account this browser has data for (other than the one signed in), with what it holds. */
+function otherProfiles() {
+  const me = acctKey(), out = new Map();
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const m = PROFILE_RE.exec(localStorage.key(i) || ''); if (!m || m[2] === me) continue;
+      if (!out.has(m[2])) out.set(m[2], { key: m[2] });
+    }
+  } catch {}
+  const list = [];
+  for (const pr of out.values()) {
+    const favs = ['live', 'movie', 'series'].reduce((n, sec) => n + arr(readJson(`iptvp.fav|${sec}|${pr.key}`, [])).length, 0);
+    const recents = ['live', 'movie', 'series'].reduce((n, sec) => n + arr(readJson(`iptvp.recent|${sec}|${pr.key}`, [])).length, 0);
+    const prefs = readJson(`iptvp.prefs|${pr.key}`, {}) || {};
+    const hidden = Object.values(prefs.hide || {}).reduce((n, a) => n + arr(a).length, 0);
+    const pinned = Object.values(prefs.pin || {}).reduce((n, a) => n + arr(a).length, 0);
+    const watched = Object.keys(readJson(`iptvp.pos|${pr.key}`, {}) || {}).length;
+    if (!favs && !recents && !hidden && !pinned && !watched) continue;
+    const [type, a, b] = pr.key.split('|');
+    const name = type === 'x' ? b || 'Account' : (accounts().find((x) => acctId(x) === pr.key) || {}).label || 'Playlist';
+    const where = type === 'x' ? hostOf(a) : hostOf(a) || 'Playlist';
+    list.push({ ...pr, name, where, host: type === 'x' ? hostOf(a) : '', favs, recents, hidden, pinned, watched });
+  }
+  return list;
+}
+function profileSummary(pr) {
+  const bits = [];
+  if (pr.favs) bits.push(`${pr.favs} favorite${pr.favs === 1 ? '' : 's'}`);
+  if (pr.hidden) bits.push(`${pr.hidden} hidden categor${pr.hidden === 1 ? 'y' : 'ies'}`);
+  if (pr.pinned) bits.push(`${pr.pinned} pinned`);
+  if (pr.recents || pr.watched) bits.push('watch history');
+  return bits.length > 1 ? `${bits.slice(0, -1).join(', ')} and ${bits[bits.length - 1]}` : bits.join('');
+}
+/** Profiles that look like the same provider: same address, or one of this account's backup addresses. */
+function sameProviderProfiles() {
+  if (!state.xt) return [];
+  const hosts = new Set(streamServers().concat([state.xt.keyBase, state.xt.base]).filter(Boolean).map(hostOf));
+  return otherProfiles().filter((pr) => pr.key.startsWith('x|') && (hosts.has(pr.host) || arr((accounts().find((x) => acctId(x) === pr.key) || {}).backups).some((b) => hosts.has(hostOf(b)))));
+}
+function hasOwnData() {
+  const h = Object.values(state.prefs.hide || {}).some((a) => arr(a).length) || Object.values(state.prefs.pin || {}).some((a) => arr(a).length);
+  return h || ['live', 'movie', 'series'].some((sec) => (state.fav[sec] && state.fav[sec].size) || (state.recent[sec] && state.recent[sec].length)) || Object.keys(state.pos || {}).length > 0;
+}
+function copyProfile(fromKey) {
+  const me = acctKey();
+  const g = (k, d) => readJson(`iptvp.${k}|${fromKey}`, d), mine = (k, d) => readJson(`iptvp.${k}|${me}`, d);
+  for (const sec of ['live', 'movie', 'series']) {
+    const favs = arr(mine('fav|' + sec, [])), have = new Set(favs.map((x) => typeof x === 'string' ? x : x.key));
+    for (const f of arr(g('fav|' + sec, []))) { const k = typeof f === 'string' ? f : f.key; if (!have.has(k)) { favs.push(f); have.add(k); } }
+    store.set(skey('fav|' + sec), favs);
+    const rec = arr(mine('recent|' + sec, [])), seen = new Set(rec.map((x) => typeof x === 'string' ? x : x.key));
+    for (const r of arr(g('recent|' + sec, []))) { const k = typeof r === 'string' ? r : r.key; if (!seen.has(k)) { rec.push(r); seen.add(k); } }
+    store.set(skey('recent|' + sec), rec.slice(0, 60));
+  }
+  store.set(skey('pos'), Object.assign({}, g('pos', {}), mine('pos', {})));
+  store.set(skey('lastep'), Object.assign({}, g('lastep', {}), mine('lastep', {})));
+  const from = g('prefs', {}) || {}, cur = Object.assign({ cat: {}, sort: {}, section: '', hide: {}, pin: {} }, mine('prefs', {}));
+  for (const sec of ['live', 'movie', 'series']) {
+    cur.hide[sec] = [...new Set(arr(cur.hide[sec]).concat(arr((from.hide || {})[sec])))];
+    cur.pin[sec] = [...new Set(arr(cur.pin[sec]).concat(arr((from.pin || {})[sec])))];
+    if (!cur.cat[sec] && from.cat && from.cat[sec]) cur.cat[sec] = from.cat[sec];
+    if (!cur.sort[sec] && from.sort && from.sort[sec]) cur.sort[sec] = from.sort[sec];
+  }
+  store.set(skey('prefs'), cur);
+  // Backup servers too, if this account doesn't have any yet.
+  const src = accounts().find((x) => acctId(x) === fromKey);
+  if (state.acct && !backupList(state.acct).length && src && backupList(src).length) { state.acct.backups = backupList(src); updateSavedAccount(state.acct); }
+  loadUserData();
+  renderCats(); refreshView(true); renderNowPlaying();
+}
+/** On a new login with nothing saved yet, offer to bring over the setup from the same provider's other login. */
+function offerCopy() {
+  if (!state.acct || hasOwnData() || store.get(skey('copyAsked'), false)) return;
+  const found = sameProviderProfiles(); if (!found.length) return;
+  const pr = found.sort((a, b) => (b.favs + b.hidden) - (a.favs + a.hidden))[0];
+  store.set(skey('copyAsked'), true);
+  openModal(`<div class="dg cp">
+    <div class="kicker"><span class="txt">New login</span></div>
+    <h2>Bring over your setup?</h2>
+    <p class="dg-sub">You've used this provider before as <b>${esc(pr.name)}</b>. Copy its ${esc(profileSummary(pr))} to this login?</p>
+    <p class="hint">Nothing is removed from ${esc(pr.name)}, and you can do this later from the account menu.</p>
+    <div class="det-actions"><button type="button" class="btn primary" data-act="cpyes">${icon('download')}Copy my setup</button><button type="button" class="btn" data-act="cpno">Not now</button></div>
+  </div>`, {
+    cpyes: () => { copyProfile(pr.key); closeModal(); toast(`Copied from ${pr.name}`); },
+    cpno: () => closeModal(),
+  }, 'sm');
+}
+/** Account menu: copy from any other account this browser knows. */
+function openCopyPicker() {
+  const list = otherProfiles();
+  const same = new Set(sameProviderProfiles().map((x) => x.key));
+  openModal(`<div class="dg cp">
+    <div class="kicker"><span class="txt">Copy from another account</span></div>
+    <h2>Bring over a setup</h2>
+    <p class="dg-sub">Adds favorites, hidden and pinned categories and watch history from another login to this one. Works best with the same provider — its channels and categories match. Nothing is removed from either account.</p>
+    ${list.length ? `<div class="ce-list">${list.map((pr, i) => `<div class="ce-row cp-row"><span class="ce-n"><b>${esc(pr.name)}</b><span class="cp-sub">${esc(pr.where)}${same.has(pr.key) ? ' · same provider' : ''} · ${esc(profileSummary(pr))}</span></span>
+      <button type="button" class="btn sm${same.has(pr.key) ? ' primary' : ''}" data-act="cpfrom" data-i="${i}">Copy</button></div>`).join('')}</div>`
+      : `<div class="state">${icon('inbox')}<b>Nothing to copy</b><p>This browser doesn't have any other account with favorites or hidden categories.</p></div>`}
+  </div>`, {
+    cpfrom: (b) => { const pr = list[+b.dataset.i]; if (!pr) return; copyProfile(pr.key); closeModal(); toast(`Copied from ${pr.name}`); },
+  }, 'sm');
+}
 
 /* ---- 19b-backup.js ---- */
 /* =====================================================================
